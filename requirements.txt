@@ -1,0 +1,4 @@
+# Windows 전용. Python 3.9+ 권장
+uiautomation>=2.0.18   # Microsoft UI Automation 래퍼 (커스텀 렌더링 메시지 읽기)
+pywin32>=306           # Win32 창/컨트롤 탐지 보조
+openai>=1.30.0         # (옵션) GPT 요약. 안 쓰면 설치 안 해도 됨

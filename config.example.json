@@ -1,0 +1,53 @@
+{
+  "_설명": "config.json 으로 복사해서 쓰세요. 경로는 반드시 / (슬래시)로! 예: C:/kakao_share",
+
+  "mode": "cycle",
+  "_mode": "cycle=메인창 목록 자동 순회(90개 자동). windows=별도 창 띄운 방만 읽음(테스트용).",
+
+  "cycle_method": "keys",
+  "_cycle_method": "keys=키보드 순회(권장, 줄높이 무관). pixel=마우스 좌표 더블클릭(대체용).",
+
+  "read_method": "export",
+  "_read_method": "export=Ctrl+S 대화내보내기(전체기록, 권장). clipboard=Ctrl+A/C 복사(화면분량만).",
+
+  "export_keep": false,
+  "_export_keep": "true면 내보낸 임시 txt(_export_tmp.txt)를 지우지 않고 남김(디버깅용).",
+
+  "poll_seconds": 5,
+  "_poll_seconds": "한 바퀴 끝난 뒤 다음 바퀴까지 대기 초.",
+
+  "dwell_ms": 700,
+  "_dwell_ms": "방 열기/활성화 후 로딩 대기(ms). 느린 PC라 700. 클립보드가 자꾸 비면 1000~1500.",
+
+  "row_height": 62,
+  "_row_height": "cycle: 채팅목록 한 줄 높이(px). 방을 건너뛰면 줄이고(55), 같은 방 반복이면 늘리세요(68).",
+
+  "list_top_pad": 6,
+  "_list_top_pad": "cycle: 목록 맨 위 여백(px). 첫 방을 놓치면 조절.",
+
+  "max_scrolls": 30,
+  "_max_scrolls": "cycle: 한 바퀴에 스크롤 최대 횟수(방 많으면 늘리기).",
+
+  "max_rooms": 600,
+  "_max_rooms": "cycle: 한 바퀴 순회 방 개수 안전상한. 목록 끝나면 알아서 멈춤. 아주 많으면 늘리기.",
+
+  "share_dir": "C:/kakao_share",
+  "_share_dir": "정리 결과 저장 폴더(/ 로!). 공유폴더 예: //서버/공유/kakao",
+
+  "copy_db": true,
+  "_copy_db": "true면 정리 시 kakao.db 사본도 공유폴더에 복사.",
+
+  "_알림설정": "── 아래는 무인 운영 안전장치(신뢰성) ──",
+
+  "alert_webhook_url": "",
+  "_alert_webhook_url": "문제 시 푸시 보낼 웹훅 URL(Discord/Slack 등). 비우면 ALERT.txt(공유폴더)만 사용.",
+
+  "coverage_min_ratio": 0.7,
+  "_coverage_min_ratio": "한 바퀴에 '아는 방'의 이 비율 미만만 수집되면 경고. 0.7=70%.",
+
+  "health_stale_minutes": 60,
+  "_health_stale_minutes": "healthcheck: 이 분수 넘게 수집 갱신 없으면 '멈춤'으로 보고 긴급 알림.",
+
+  "kakao_missing_alerts_after": 5,
+  "_kakao_missing_alerts_after": "카톡 미실행/로그아웃이 이 주기 연속되면 긴급 알림."
+}
