@@ -49,5 +49,25 @@
   "_health_stale_minutes": "healthcheck: 이 분수 넘게 수집 갱신 없으면 '멈춤'으로 보고 긴급 알림.",
 
   "kakao_missing_alerts_after": 5,
-  "_kakao_missing_alerts_after": "카톡 미실행/로그아웃이 이 주기 연속되면 긴급 알림."
+  "_kakao_missing_alerts_after": "카톡 미실행/로그아웃이 이 주기 연속되면 긴급 알림.",
+
+  "_브리핑설정": "── AI 일일 브리핑 / 응답대기 감지(③) ──",
+
+  "my_names": [],
+  "_my_names": "내(계정 주인) 카톡 표시이름들. 비우면 '가장 많은 방에 나온 이름'으로 추정. 정확히 넣기 권장.",
+
+  "briefing_lookback_days": 14,
+  "_briefing_lookback_days": "응답대기/브리핑에서 볼 최근 기간(일).",
+
+  "response_wait_hours": 0,
+  "_response_wait_hours": "미답이 이 시간 이상인 것만 응답대기로. 0=전부.",
+
+  "ai_provider": "",
+  "_ai_provider": "openai | anthropic | 빈값. 빈값이면 규칙기반 '응답대기'만(AI 요약/초안 생략).",
+
+  "ai_api_key": "",
+  "_ai_api_key": "AI 키. 비우면 환경변수 OPENAI_API_KEY / ANTHROPIC_API_KEY 사용.",
+
+  "ai_model": "gpt-4o-mini",
+  "_ai_model": "openai=gpt-4o-mini 등 / anthropic=claude-3-5-sonnet-latest 등(최신으로 설정)."
 }
