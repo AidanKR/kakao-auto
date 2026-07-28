@@ -14,3 +14,7 @@ health.json
 ALERT.txt
 healthcheck.log
 briefing.log
+backups/
+backup.log
+kakao_restored.db
+_check.db

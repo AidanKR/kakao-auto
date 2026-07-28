@@ -69,5 +69,18 @@
   "_ai_api_key": "AI 키. 비우면 환경변수 OPENAI_API_KEY / ANTHROPIC_API_KEY 사용.",
 
   "ai_model": "gpt-4o-mini",
-  "_ai_model": "openai=gpt-4o-mini 등 / anthropic=claude-3-5-sonnet-latest 등(최신으로 설정)."
+  "_ai_model": "openai=gpt-4o-mini 등 / anthropic=claude-3-5-sonnet-latest 등(최신으로 설정).",
+
+  "_백업설정": "── DB 백업/암호화(④) ──",
+
+  "backup_passphrase": "",
+  "_backup_passphrase": "설정하면 백업을 암호화(클라우드 유출 대비). 비우면 평문 gzip. 잊으면 복구 불가하니 안전히 보관!",
+
+  "backup_keep": 14,
+  "_backup_keep": "백업 보관 개수(회전). 초과분 자동 삭제.",
+
+  "backup_to_share": true,
+  "_backup_to_share": "true면 최신 백업을 공유폴더(클라우드)에도 복사.",
+
+  "_backup_note": "암호화 켜면 copy_db는 false 권장(공유폴더에 평문 DB 안 두기). 백업은 매일 02:00 자동."
 }

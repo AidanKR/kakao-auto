@@ -27,6 +27,14 @@
 - **AI 브리핑(키 있으면)** — `ai_provider`(openai/anthropic)+`ai_api_key` 설정 시: **① 상황 요약 ② 먼저 답할 것 ③ 응답 초안**을 `_daily/브리핑_날짜.md`로 생성.
 - ⚠️ **자동 발송 없음** — 초안만 만들고, 보내는 건 사람이 확인 후. (카톡은 전송 API도 없고, 수집기는 읽기 전용 유지)
 
+## 보안 — 백업 + 암호화 (④)
+`backup.py` (매일 02:00 자동, `8_backup.bat`).
+- **회전 백업** — SQLite 온라인 백업(수집 중에도 안전) → gzip → `backups/`에 최근 N개 보관(`backup_keep`). 공유폴더(클라우드)에도 복사.
+- **선택적 암호화** — `config.json`의 `backup_passphrase` 설정 시 백업을 **AES(Fernet)로 암호화** → 구글드라이브 유출돼도 안전. (`cryptography` 필요, `1_install.bat`이 설치)
+  - ⚠️ 패스프레이즈 잊으면 복구 불가 — 안전한 곳에 따로 보관!
+  - 암호화 켜면 `copy_db: false` 권장(공유폴더에 평문 DB 안 두기).
+- **복구** — `python restore.py backups/kakao_...enc --pass "..."` → `kakao_restored.db` 로 풀림(라이브 DB 덮어쓰지 않음, 확인 후 교체).
+
 ## 요구사항
 - **Windows** / Python 3.9+
 - 카카오톡 로그인 + **메인 창을 크게 열어 두기**
