@@ -1,18 +1,17 @@
 """
 정리(공유) 도구 — 하루 2번(11:50, 23:50) 스케줄러가 실행.
 
-DB(kakao.db)에 쌓인 메시지를 공유폴더(share_dir)에 날짜별·방별 TXT로 정리한다.
-매 실행마다 '그 날' 파일을 최신 상태로 다시 쓰므로(덮어쓰기) 여러 번 돌려도 안전.
+DB(kakao.db)를 공유폴더(share_dir)에 **실제 메시지 날짜(sent_date)별·방별 TXT**로 정리한다.
+기본은 '증분': 지난 정리 이후 새로 수집된 메시지가 속한 날짜만 다시 쓴다(구글드라이브 동기화 최소화).
+--all 이면 모든 날짜를 재생성(초기 백필용).
 
-출력 구조(share_dir 아래):
-    2026-07-07/
-        _전체.txt                (그날 전체 방 합본)
-        방이름A.txt
-        방이름B.txt
-    kakao.db                     (copy_db=true 면 DB 사본도 함께 — 다른 PC에서 조회용)
+출력(share_dir 아래):
+    2026-07-07/ _전체.txt, 방이름.txt ...
+    rooms_seen.txt, kakao.db(copy_db)
 
 사용:
-    python consolidate.py                 # 오늘 날짜 정리
+    python consolidate.py            # 증분(새 메시지 있는 날짜만)
+    python consolidate.py --all      # 전체 날짜 재생성
     python consolidate.py --date 2026-07-06
 """
 import argparse
@@ -35,85 +34,118 @@ def load_config():
     for enc in ("utf-8-sig", "utf-8", "cp949"):
         try:
             return json.loads(data.decode(enc))
-        except UnicodeDecodeError:
-            continue
-    return json.loads(data.decode("utf-8", errors="replace"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            try:
+                return json.loads(data.decode(enc).replace("\\", "/"))
+            except Exception:
+                continue
+    return {}
 
 
 def safe_name(room):
     return "".join(c for c in room if c.isalnum() or c in " _-").strip() or "room"
 
 
-def fetch_day(day):
-    """collected_at 이 해당 날짜인 메시지를 방별로 묶어서 반환: {room: [(sent_at, sender, content)]}"""
-    conn = sqlite3.connect(db.DB_PATH)
+def line(sent_at, sender, content):
+    # sent_at ISO 'YYYY-MM-DDThh:mm:00' -> 'hh:mm' 만 보기 좋게
+    t = sent_at[11:16] if sent_at and "T" in sent_at else (sent_at or "")
+    head = " ".join(x for x in (t, sender or "") if x)
+    return f"[{head}] {content}" if head else content
+
+
+def dates_to_rebuild(conn, since_iso, do_all):
+    """재생성할 sent_date 목록. do_all이면 전체, 아니면 since 이후 수집분이 속한 날짜만."""
+    if do_all or not since_iso:
+        rows = conn.execute(
+            "SELECT DISTINCT sent_date FROM messages WHERE sent_date!='' ORDER BY sent_date"
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT DISTINCT sent_date FROM messages "
+            "WHERE sent_date!='' AND collected_at > ? ORDER BY sent_date",
+            (since_iso,),
+        ).fetchall()
+    return [r[0] for r in rows if r[0]]
+
+
+def fetch_day(conn, day):
+    """sent_date=day 인 메시지를 방별로: {room: [(sent_at, sender, content)]} (시간순)."""
     cur = conn.execute(
         "SELECT room, sent_at, sender, content FROM messages "
-        "WHERE substr(collected_at,1,10)=? ORDER BY room, id",
+        "WHERE sent_date=? ORDER BY room, sent_at, seq, id",
         (day,),
     )
     grouped = {}
     for room, sent_at, sender, content in cur.fetchall():
         grouped.setdefault(room, []).append((sent_at, sender, content))
-    conn.close()
     return grouped
 
 
-def line(sent_at, sender, content):
-    head = " ".join(x for x in (sent_at or "", sender or "") if x)
-    return f"[{head}] {content}" if head else content
-
-
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--date", help="YYYY-MM-DD (기본: 오늘)")
-    args = ap.parse_args()
-    day = args.date or datetime.now().strftime("%Y-%m-%d")
-
-    cfg = load_config()
-    share_dir = Path(cfg.get("share_dir") or (HERE / "share")).expanduser()
-
-    grouped = fetch_day(day)
-    if not grouped:
-        print(f"{day} 에 수집된 메시지가 없습니다.")
-        return
-
+def write_day(share_dir, day, grouped, stamp):
     day_dir = share_dir / day
-    try:
-        day_dir.mkdir(parents=True, exist_ok=True)
-    except Exception as e:
-        print(f"[오류] 공유폴더를 만들 수 없습니다: {share_dir}\n  {e}")
-        print("  config.json 의 share_dir 경로(네트워크/공유 폴더)를 확인하세요.")
-        return
-
-    stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+    day_dir.mkdir(parents=True, exist_ok=True)
     all_lines = [f"# {day} 카카오톡 정리 (마지막 갱신 {stamp})", ""]
-
     for room, msgs in grouped.items():
-        # 방별 파일
         room_path = day_dir / f"{safe_name(room)}.txt"
         with room_path.open("w", encoding="utf-8") as f:
             f.write(f"# {room} — {day} ({len(msgs)}건, 갱신 {stamp})\n\n")
             for m in msgs:
                 f.write(line(*m) + "\n")
-        # 합본용
         all_lines.append(f"===== {room} ({len(msgs)}건) =====")
         all_lines += [line(*m) for m in msgs]
         all_lines.append("")
-
     (day_dir / "_전체.txt").write_text("\n".join(all_lines), encoding="utf-8")
+    return sum(len(v) for v in grouped.values())
 
-    # 전체 방 목록(레지스트리) — 새 방 포함, 공유폴더 루트에 항상 최신본
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--date", help="특정 날짜만 재생성 YYYY-MM-DD")
+    ap.add_argument("--all", action="store_true", help="모든 날짜 재생성(초기 백필)")
+    args = ap.parse_args()
+
+    cfg = load_config()
+    share_dir = Path(cfg.get("share_dir") or (HERE / "share")).expanduser()
     try:
-        conn = sqlite3.connect(db.DB_PATH)
+        share_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        print(f"[오류] 공유폴더 생성 실패: {share_dir}\n  {e}")
+        return
+
+    conn = db.connect()
+    stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+    run_start = datetime.now().isoformat(timespec="seconds")
+
+    if args.date:
+        days = [args.date]
+    else:
+        since = db.get_meta(conn, "last_consolidate")
+        days = dates_to_rebuild(conn, since, args.all)
+
+    if not days:
+        print("새로 정리할 메시지가 없습니다.")
+    else:
+        total = 0
+        for day in days:
+            grouped = fetch_day(conn, day)
+            if grouped:
+                total += write_day(share_dir, day, grouped, stamp)
+        print(f"정리 완료: 날짜 {len(days)}개 / 총 {total}건 → {share_dir}")
+
+    # 전체 방 목록 항상 최신본
+    try:
         rooms = db.all_rooms(conn)
-        conn.close()
-        lines = [f"# 전체 방 목록 ({len(rooms)}개, 갱신 {stamp})", "# 방이름\t최초발견\t마지막\t누적건수", ""]
+        lines = [f"# 전체 방 목록 ({len(rooms)}개, 갱신 {stamp})",
+                 "# 방이름\t최초발견\t마지막\t누적건수", ""]
         for room, first, last, cnt in rooms:
             lines.append(f"{room}\t{first}\t{last}\t{cnt}")
         (share_dir / "rooms_seen.txt").write_text("\n".join(lines), encoding="utf-8")
     except Exception as e:
-        print(f"  (rooms_seen.txt 작성 실패, 무시: {e})")
+        print(f"  (rooms_seen.txt 실패, 무시: {e})")
+
+    # 증분 기준점 갱신(--date/--all 아닌 일반 실행에서만)
+    if not args.date and not args.all:
+        db.set_meta(conn, "last_consolidate", run_start)
 
     if cfg.get("copy_db", True):
         try:
@@ -121,8 +153,7 @@ def main():
         except Exception as e:
             print(f"  (DB 사본 복사 실패, 무시: {e})")
 
-    total = sum(len(v) for v in grouped.values())
-    print(f"정리 완료: {day}  방 {len(grouped)}개 / 총 {total}건 → {day_dir}")
+    conn.close()
 
 
 if __name__ == "__main__":

@@ -403,9 +403,23 @@ def export_room(win, cfg):
 
 
 def parse_clip(text, room, today):
+    """클립보드/내보내기 텍스트 -> 정규화된 행 리스트.
+    각 행: {room, sender, sent_at(ISO), sent_date, seq, content}."""
     rows = []
     cur_date = today
-    cur = None
+    cur = None                      # {sender, ampm, hh, mi, date, content}
+    seqc = {}                       # (sender, iso, content) -> 순번
+
+    def finalize(m):
+        if m is None:
+            return
+        iso, date = db.normalize_time(m["date"], m["ampm"], m["hh"], m["mi"])
+        key = (m["sender"], iso, m["content"])
+        s = seqc.get(key, 0)
+        seqc[key] = s + 1
+        rows.append({"room": room, "sender": m["sender"], "sent_at": iso,
+                     "sent_date": date, "seq": s, "content": m["content"]})
+
     for raw in text.splitlines():
         line = raw.rstrip("\r")
         s = line.strip()
@@ -416,18 +430,16 @@ def parse_clip(text, room, today):
             continue
         mm = MSG_RE.match(line)
         if mm:
-            if cur:
-                rows.append(cur)
+            finalize(cur)
             sender, ampm, hh, mi, content = mm.groups()
-            cur = {"room": room, "sender": sender,
-                   "sent_at": f"{cur_date} {ampm} {int(hh)}:{mi}", "content": content}
+            cur = {"sender": sender, "ampm": ampm, "hh": hh, "mi": mi,
+                   "date": cur_date, "content": content}
         else:
             if s == "":
                 continue
             if cur is not None:
                 cur["content"] += "\n" + line
-    if cur:
-        rows.append(cur)
+    finalize(cur)
     return rows
 
 
