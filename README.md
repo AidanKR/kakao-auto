@@ -4,8 +4,19 @@
 **SQLite 누적**하고, 하루 2번 **공유폴더에 날짜·방별 TXT로 정리**하며,
 **무인 운영 상태를 스스로 감시·알림**하는 도구.
 
-> ⚠️ 비공식 방식(카카오 약관 위반). 본인 PC에서 본인이 받은 메시지를 읽기만 하며(전송 안 함),
-> 카톡 업데이트로 깨질 수 있습니다. 업무 전용 계정 전제. 개인용 아카이빙 목적.
+---
+
+## ⚠️ 반드시 먼저 읽어주세요 (고지)
+
+이 프로젝트는 **개인 아카이빙용** 도구이며 **카카오(Kakao)와 무관**합니다(비공식·비제휴).
+
+- **카카오 이용약관 위반입니다.** 카톡 클라이언트를 자동화·스크래핑하는 방식이라, 카카오와의 **계약(약관) 위반**에 해당합니다. 이는 형사처벌 대상은 아니지만, **계정 정지·이용 제한** 등 조치를 받을 수 있습니다. **본인 책임하에 사용하세요.**
+- **"해킹"·"도청"은 아닙니다.** 카카오 서버에 침입하는 게 아니라 **본인 PC에서 본인 계정에 이미 표시된 대화**를 읽습니다. 본인이 대화 **당사자**이므로 통신비밀보호법상 감청에 해당하지 않습니다.
+- **개인정보 책임은 사용자에게 있습니다.** 수집물에는 **상대방(고객·거래처)의 개인정보**가 포함됩니다. 대량 수집·클라우드 저장·AI 처리 시 **개인정보보호법상 처리자 의무**(안전조치·목적 내 사용·과도 공유 금지·파기 요청 대응)가 발생합니다. 반드시 준수하세요.
+- **전제:** 본인 소유의 **업무 전용 계정**, **읽기 전용**(전송·자동발송 안 함), **비공개 저장**(백업 암호화 권장).
+- **무보증:** 카톡 업데이트로 언제든 깨질 수 있으며, 저자는 사용으로 인한 어떤 손해·불이익·법적 책임도 지지 않습니다.
+
+> **English:** Personal archiving tool, **not affiliated with Kakao**. Automating the KakaoTalk client **violates Kakao's Terms of Service** (a contractual matter — risk of account suspension, not a criminal offense). It is **not hacking or wiretapping**: it reads your own messages, on your own PC, in conversations you are a party to. The archive contains **other people's personal data** — you are the data controller and are responsible for lawful, secure handling (encryption, purpose limitation, deletion requests) under applicable privacy law (e.g. Korea's PIPA). **Own business account only, read-only, private storage. Use at your own risk; provided as-is with no warranty or liability.**
 
 ## 신뢰성/모니터링 (무인 운영 안전장치)
 - **health.json** — 매 바퀴 상태 기록(수집 방수·커버리지·신규건수·오류). 공유폴더에도 복사.
