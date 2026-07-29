@@ -5,6 +5,6 @@ cd /d "%~dp0"
 set PY=py -3
 %PY% --version >nul 2>&1
 if errorlevel 1 set PY=python
-%PY% graph_export.py --out "%~dp0kakao_3d.html"
-if exist "%~dp0kakao_3d.html" start "" "%~dp0kakao_3d.html"
+%PY% graph_export.py --out "%~dp0kakao_2d.html"
+if exist "%~dp0kakao_2d.html" start "" "%~dp0kakao_2d.html"
 pause
