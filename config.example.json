@@ -63,13 +63,16 @@
   "_response_wait_hours": "미답이 이 시간 이상인 것만 응답대기로. 0=전부.",
 
   "ai_provider": "",
-  "_ai_provider": "openai | anthropic | 빈값. 빈값이면 규칙기반 '응답대기'만(AI 요약/초안 생략).",
+  "_ai_provider": "ollama(로컬·무료·외부전송0, 민감데이터 권장) | openai | anthropic | 빈값(규칙기반만).",
 
   "ai_api_key": "",
-  "_ai_api_key": "AI 키. 비우면 환경변수 OPENAI_API_KEY / ANTHROPIC_API_KEY 사용.",
+  "_ai_api_key": "openai/anthropic 키(ollama는 불필요). 비우면 환경변수 OPENAI_API_KEY/ANTHROPIC_API_KEY.",
 
-  "ai_model": "gpt-4o-mini",
-  "_ai_model": "openai=gpt-4o-mini 등 / anthropic=claude-3-5-sonnet-latest 등(최신으로 설정).",
+  "ai_model": "llama3.1",
+  "_ai_model": "ollama=llama3.1/qwen2.5 등 / openai=gpt-4o-mini / anthropic=claude-3-5-sonnet-latest.",
+
+  "ollama_host": "http://localhost:11434",
+  "_ollama_host": "Ollama 서버 주소(기본값 그대로 두면 됨).",
 
   "_백업설정": "── DB 백업/암호화(④) ──",
 

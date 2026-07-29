@@ -61,6 +61,26 @@ def _anthropic(cfg, system, user, max_tokens):
         return None
 
 
+def _ollama(cfg, system, user, max_tokens):
+    """로컬 Ollama(외부전송 0, 무료). 먼저 'ollama serve' + 'ollama pull <model>' 필요."""
+    model = cfg.get("ai_model", "llama3.1")
+    host = cfg.get("ollama_host", "http://localhost:11434")
+    try:
+        d = _post(
+            host.rstrip("/") + "/api/chat",
+            {"Content-Type": "application/json"},
+            {"model": model, "stream": False,
+             "messages": [{"role": "system", "content": system},
+                          {"role": "user", "content": user}],
+             "options": {"num_predict": max_tokens}},
+            timeout=180,
+        )
+        return (d.get("message") or {}).get("content")
+    except Exception as e:
+        print(f"  [AI] Ollama 호출 실패(‘ollama serve’ 실행 + ‘ollama pull {model}’ 확인): {e}")
+        return None
+
+
 def call(cfg, system, user, max_tokens=1500):
     """설정된 provider로 LLM 호출. 미설정/실패면 None(→ 규칙기반만 사용)."""
     provider = (cfg.get("ai_provider") or "").lower()
@@ -68,4 +88,6 @@ def call(cfg, system, user, max_tokens=1500):
         return _openai(cfg, system, user, max_tokens)
     if provider == "anthropic":
         return _anthropic(cfg, system, user, max_tokens)
+    if provider == "ollama":
+        return _ollama(cfg, system, user, max_tokens)
     return None
