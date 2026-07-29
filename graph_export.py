@@ -26,8 +26,14 @@ TEMPLATE = r"""<!doctype html>
   #hud{position:fixed;top:12px;left:14px;font-size:13px;line-height:1.6;z-index:5;
     background:rgba(15,20,32,.75);padding:9px 13px;border-radius:10px;border:1px solid #26324a}
   #hud b{color:#7fb2ff} .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
-  #find{margin-top:6px;width:150px;background:#0c1018;border:1px solid #26324a;color:#cdd7e6;
-    border-radius:6px;padding:4px 7px;font-size:12px}
+  #hud input{background:#0c1018;border:1px solid #26324a;color:#cdd7e6;border-radius:6px;padding:4px 7px;font-size:12px}
+  #find{margin-top:6px;width:150px}
+  #hud .row{margin-top:6px;display:flex;align-items:center;gap:4px}
+  #hud .row input[type=date]{width:120px}
+  #clr{cursor:pointer;color:#8aa0c0;border:1px solid #26324a;border-radius:6px;padding:3px 6px;font-size:11px}
+  .chip{display:inline-block;background:#15202f;border:1px solid #26324a;border-radius:10px;
+    padding:2px 8px;margin:2px 3px 2px 0;font-size:11.5px;color:#bcd}
+  .chip b{color:#f0a060}
   #panel{position:fixed;top:0;right:0;width:370px;max-width:88vw;height:100vh;background:#0c1018;
     border-left:1px solid #26324a;transform:translateX(101%);transition:transform .18s ease;
     overflow-y:auto;padding:14px 16px;box-sizing:border-box;z-index:8}
@@ -43,7 +49,8 @@ TEMPLATE = r"""<!doctype html>
   <span class="dot" style="background:#3a8ee6"></span>방 &nbsp;
   <span class="dot" style="background:#f0803c"></span>사람<br>
   노드 클릭=내용 보기 · 드래그=이동 · 휠=확대<br>
-  <input id="find" placeholder="이름 검색…">
+  <input id="find" placeholder="이름 검색…"><br>
+  <div class="row"><input type="date" id="from"><span>~</span><input type="date" id="to"><span id="clr">지움</span></div>
 </div>
 <div id="panel"><span id="pclose">&times;</span><div id="pbody"></div></div>
 <svg id="net"></svg>
@@ -99,17 +106,36 @@ svg.addEventListener("wheel",e=>{e.preventDefault(); const s=e.deltaY<0?1.12:0.8
   view.k=Math.max(.15,Math.min(5,view.k*s)); view.x=e.clientX-gx*view.k; view.y=e.clientY-gy*view.k; apply();},{passive:false});
 function esc(s){return (s||"").replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));}
 function fmt(iso){ return iso&&iso.length>=16 ? iso.slice(5,10)+" "+iso.slice(11,16) : (iso||""); }
+let F={from:"",to:""}, current=null;
+function inRange(iso){ const d=(iso||"").slice(0,10); return (!F.from||d>=F.from)&&(!F.to||d<=F.to); }
+function nodeList(n){ const l=(detail[n.id]||{}).list||[]; return (!F.from&&!F.to)?l:l.filter(m=>inRange(m[0])); }
 function openPanel(n){
-  const d=detail[n.id]; const p=document.getElementById("pbody");
+  current=n; const list=nodeList(n);
   const conns=links.filter(l=>l.source===n.id||l.target===n.id).length;
+  const cnt={}; list.forEach(m=>{cnt[m[1]]=(cnt[m[1]]||0)+1;});
+  const parts=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+  const label=n.type==="room"?"참여자":"활동한 방";
   let h="<h3>"+esc(n.name)+"</h3><div class='meta'>"+(n.type==="room"?"방":"사람")
-    +" · 메시지 "+n.count+"건 · 연결 "+conns+"</div>";
-  const list=(d&&d.list)||[];
-  if(!list.length){ h+="<div class='meta'>표시할 최근 메시지가 없습니다.</div>"; }
+    +" · 메시지 "+n.count+"건 · 연결 "+conns+((F.from||F.to)?" · 기간필터":"")+"</div>";
+  if(parts.length){ h+="<div class='meta'>"+label+" ("+parts.length+")</div><div>";
+    parts.forEach(x=>{h+="<span class='chip'>"+esc(x[0])+" <b>"+x[1]+"</b></span>";}); h+="</div>"; }
+  if(!list.length){ h+="<div class='msg'>이 기간에 표시할 메시지가 없습니다(최근 임베드분 기준).</div>"; }
   list.forEach(m=>{ h+="<div class='msg'><div class='h'>"+fmt(m[0])+" · "+esc(m[1])+"</div>"+esc(m[2])+"</div>"; });
-  p.innerHTML=h; document.getElementById("panel").classList.add("open");
+  document.getElementById("pbody").innerHTML=h; document.getElementById("panel").classList.add("open");
 }
-document.getElementById("pclose").onclick=()=>document.getElementById("panel").classList.remove("open");
+function updateViz(){
+  const q=document.getElementById("find").value.trim();
+  nodes.forEach(n=>{
+    const dateOK=(!F.from&&!F.to)||((detail[n.id]||{}).list||[]).some(m=>inRange(m[0]));
+    const searchOK=!q||n.name.includes(q); n._vis=dateOK&&searchOK;
+    n._g.style.opacity=n._vis?1:.12;
+    const hl=q&&n.name.includes(q);
+    n._c.setAttribute("stroke",hl?"#ffef7a":"#0f1420"); n._c.setAttribute("stroke-width",hl?"3":"1.5");
+  });
+  lines.forEach((e,i)=>{const l=links[i]; e.style.opacity=(l.s._vis!==false&&l.t._vis!==false)?1:.08;});
+  if(current) openPanel(current);
+}
+document.getElementById("pclose").onclick=()=>{document.getElementById("panel").classList.remove("open");current=null;};
 let drag=null, pan=null, moved=false;
 gEls.forEach((g,i)=>{const n=nodes[i];
   g.addEventListener("pointerdown",e=>{e.stopPropagation(); drag={n}; moved=false; n.fx=n.x; n.fy=n.y;
@@ -121,10 +147,12 @@ svg.addEventListener("pointermove",e=>{
     view.x=e.clientX-pan.x; view.y=e.clientY-pan.y; apply(); }});
 addEventListener("pointerup",()=>{ if(drag){ if(!moved) openPanel(drag.n); drag.n.fx=null;drag.n.fy=null;drag=null;} pan=null; });
 addEventListener("resize",()=>{W=innerWidth;H=innerHeight;});
-document.getElementById("find").addEventListener("input",e=>{const q=e.target.value.trim();
-  nodes.forEach(n=>{const on=q&&n.name.includes(q);
-    n._c.setAttribute("stroke",on?"#ffef7a":"#0f1420"); n._c.setAttribute("stroke-width",on?"3":"1.5");
-    n._g.style.opacity=(!q||on)?1:.25;});});
+document.getElementById("find").addEventListener("input",updateViz);
+document.getElementById("from").addEventListener("change",e=>{F.from=e.target.value;updateViz();});
+document.getElementById("to").addEventListener("change",e=>{F.to=e.target.value;updateViz();});
+document.getElementById("clr").onclick=()=>{F.from="";F.to="";
+  document.getElementById("from").value="";document.getElementById("to").value="";
+  document.getElementById("find").value="";updateViz();};
 </script></body></html>
 """
 
@@ -138,7 +166,7 @@ def build_graph(conn, cfg):
     top_rooms = cfg.get("viz_top_rooms", 150)
     top_people = cfg.get("viz_top_people", 250)
     min_msgs = cfg.get("viz_min_msgs", 1)
-    per = cfg.get("viz_detail_msgs", 60)          # 노드당 패널에 담을 최근 메시지 수
+    per = cfg.get("viz_detail_msgs", 120)          # 노드당 패널에 담을 최근 메시지 수
 
     rooms = conn.execute(
         "SELECT room, COUNT(*) c FROM messages GROUP BY room "
