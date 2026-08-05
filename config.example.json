@@ -74,6 +74,20 @@
   "ollama_host": "http://localhost:11434",
   "_ollama_host": "Ollama 서버 주소(기본값 그대로 두면 됨).",
 
+  "_대시보드설정": "── 대시보드(dashboard.py / 10_dashboard.bat) ──",
+
+  "quiet_days": 7,
+  "_quiet_days": "이 일수 이상 소식 없는 방을 '조용해진 방'으로(놓친 관계 잡기).",
+
+  "dash_heatmap_days": 14,
+  "_dash_heatmap_days": "활동 히트맵에 보여줄 기간(일).",
+
+  "dash_heatmap_rooms": 12,
+  "_dash_heatmap_rooms": "히트맵에 보여줄 방 수(활동 많은 순).",
+
+  "dash_pending_top": 8,
+  "_dash_pending_top": "'먼저 답할 것'에 보여줄 최대 건수.",
+
   "_백업설정": "── DB 백업/암호화(④) ──",
 
   "backup_passphrase": "",
