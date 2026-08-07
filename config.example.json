@@ -74,6 +74,9 @@
   "ollama_host": "http://localhost:11434",
   "_ollama_host": "Ollama 서버 주소(기본값 그대로 두면 됨).",
 
+  "search_max_msgs": 80000,
+  "_search_max_msgs": "검색 페이지에 담을 최대 메시지 수(최신 기준). 크면 파일 커짐.",
+
   "_대시보드설정": "── 대시보드(dashboard.py / 10_dashboard.bat) ──",
 
   "quiet_days": 7,
