@@ -3,3 +3,4 @@ uiautomation>=2.0.18   # Microsoft UI Automation 래퍼 (커스텀 렌더링 메
 pywin32>=306           # Win32 창/컨트롤 탐지 보조
 openai>=1.30.0         # (옵션) 브리핑용. AI 안 쓰면 불필요(직접 urllib 호출이라 SDK 없어도 됨)
 cryptography>=42.0     # (옵션) 백업 암호화. backup_passphrase 쓸 때만 필요
+openpyxl>=3.1          # (옵션) 엑셀(xlsx) 내보내기
