@@ -14,7 +14,7 @@ import urllib.request
 from datetime import datetime
 from pathlib import Path
 
-HERE = Path(__file__).parent
+HERE = __import__("appdir").APP_DIR
 
 
 def _share_dir(cfg):

@@ -20,7 +20,7 @@ from pathlib import Path
 import db
 import llm
 
-HERE = Path(__file__).parent
+HERE = __import__("appdir").APP_DIR
 
 QUESTION_HINTS = [
     "?", "？", "문의", "언제", "얼마", "가능", "될까", "되나요", "인가요", "나요",

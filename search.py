@@ -15,7 +15,7 @@ from pathlib import Path
 
 import db
 
-HERE = Path(__file__).parent
+HERE = __import__("appdir").APP_DIR
 
 TEMPLATE = r"""<!doctype html>
 <html lang="ko"><head><meta charset="utf-8">

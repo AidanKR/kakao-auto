@@ -17,7 +17,7 @@ from pathlib import Path
 
 import db
 
-HERE = Path(__file__).parent
+HERE = __import__("appdir").APP_DIR
 
 TEMPLATE = r"""<!doctype html>
 <html><head><meta charset="utf-8"><title>KakaoTalk 2D 관계망</title>

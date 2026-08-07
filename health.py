@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-HERE = Path(__file__).parent
+HERE = __import__("appdir").APP_DIR
 HEALTH_FILE = HERE / "health.json"
 
 

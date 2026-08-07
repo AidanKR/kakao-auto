@@ -14,7 +14,7 @@ from pathlib import Path
 import alerts
 import health
 
-HERE = Path(__file__).parent
+HERE = __import__("appdir").APP_DIR
 
 
 def load_config():

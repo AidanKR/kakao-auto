@@ -24,3 +24,6 @@ dashboard.html
 카카오톡.xlsx
 추출_금액약속.csv
 media/
+build/
+dist/
+*.spec

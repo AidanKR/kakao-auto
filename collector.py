@@ -47,7 +47,7 @@ except Exception:
     win32gui = None
     win32con = None
 
-HERE = Path(__file__).parent
+HERE = __import__("appdir").APP_DIR
 ITEM = ("ListItemControl", "DataItemControl")
 
 MSG_RE = re.compile(r"^\[(.+?)\] \[(오전|오후) (\d{1,2}):(\d{2})\] (.*)$")

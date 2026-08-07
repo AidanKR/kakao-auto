@@ -27,7 +27,7 @@ from pathlib import Path
 
 import briefing
 
-HERE = Path(__file__).parent
+HERE = __import__("appdir").APP_DIR
 EXTS = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".heic",
         ".mp4", ".mov", ".avi", ".mkv", ".m4a", ".mp3",
         ".pdf", ".hwp", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".zip"}

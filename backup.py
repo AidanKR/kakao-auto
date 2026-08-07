@@ -18,7 +18,7 @@ from pathlib import Path
 import db
 import cryptobox
 
-HERE = Path(__file__).parent
+HERE = __import__("appdir").APP_DIR
 
 
 def load_config():

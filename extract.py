@@ -21,7 +21,7 @@ from pathlib import Path
 import db
 import briefing
 
-HERE = Path(__file__).parent
+HERE = __import__("appdir").APP_DIR
 
 MONEY = re.compile(
     r"(₩\s*\d[\d,]*"                       # ₩120000

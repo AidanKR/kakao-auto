@@ -11,7 +11,7 @@ import hashlib
 import re
 from pathlib import Path
 
-DB_PATH = Path(__file__).with_name("kakao.db")
+DB_PATH = __import__("appdir").APP_DIR / "kakao.db"
 
 _MESSAGES_V2 = """
 CREATE TABLE IF NOT EXISTS messages (
