@@ -91,6 +91,14 @@
   "dash_pending_top": 8,
   "_dash_pending_top": "'먼저 답할 것'에 보여줄 최대 건수.",
 
+  "_미디어설정": "── 사진·파일 만료 전 백업(media_backup.py / 14_media.bat) ──",
+
+  "media_dirs": [],
+  "_media_dirs": "카톡 '받은 파일 저장 위치' + 캐시 폴더 경로 목록(/ 로). 비우면 자동탐지 시도. 로그 보고 맞추세요.",
+
+  "media_out": "",
+  "_media_out": "미디어 저장 폴더(비우면 share_dir/media). 클라우드로 하려면 구글드라이브 경로.",
+
   "_백업설정": "── DB 백업/암호화(④) ──",
 
   "backup_passphrase": "",
