@@ -49,6 +49,8 @@ Automatically cycles through **every KakaoTalk chat room on Windows**, exports f
 
 ![Full-text search across every chat](docs/search.png)
 
+![2D relationship graph — rooms and people](docs/graph.png)
+
 ## Quick Start (Windows)
 
 1. Run `1_install.bat` — installs Python deps (opens python.org if Python is missing; check "Add to PATH").
@@ -98,6 +100,8 @@ Prefer a single app? Run `build_exe.bat` once → `dist/KakaoAuto.exe`: one menu
 `dashboard.py` / `10_dashboard.bat` — 열자마자 오늘 상황이 한 장에. **지표 카드**(오늘 메시지·응답 대기·활동한 방·조용해진 방) + **먼저 답할 것**(질문·미답시간 우선) + **최근 14일 활동 히트맵**(진할수록 활발) + **조용해진 방**(N일 이상 소식 없음 → 놓친 관계 잡기). 서버에서 정적 HTML로 그려 넣어 **JS·외부 라이브러리 0**, 오프라인 동작. 설정: `quiet_days`·`dash_heatmap_days`·`dash_heatmap_rooms`.
 
 ## 2D 관계망 시각화
+![2D relationship graph — rooms and people, click a node for messages](docs/graph.png)
+
 `graph_export.py` / `9_viz.bat` — DB에서 **방↔사람 + 방↔방(공통 참여자) 관계망**을 뽑아 **2D 인터랙티브 HTML** 생성(**노드 클릭=우측 패널: 실제 대화 + 참여자 목록** · **기간(날짜) 필터** · 드래그 이동 · 휠 확대 · 팬 · 이름 검색). **완전 자체완결**(외부 라이브러리·CDN 없음) → 인터넷 없이 더블클릭이면 열림. LLM·외부전송 0(전부 로컬). 활동 많은 방/사람이 크게, 소통 허브가 한눈에.
   - **방↔방 연결**(같은 사람이 겹치는 방, 허브 노이즈 자동 제외) · **색: 타입/최근활동** 전환 · **CSV 내보내기**(노드/연결).
 
