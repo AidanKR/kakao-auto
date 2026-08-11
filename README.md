@@ -1,8 +1,10 @@
-# kakao-auto — 카카오톡 업무대화 자동 수집·정리 (Windows)
+# kakao-auto — KakaoTalk Windows Auto Chat Collector & Archiver (카카오톡 자동 수집·백업)
 
-카카오톡 **대화방을 전부 자동 순회**하며 `Ctrl+S`(대화 내보내기)로 전체 기록을 뽑아
-**SQLite 누적**하고, 하루 2번 **공유폴더에 날짜·방별 TXT로 정리**하며,
-**무인 운영 상태를 스스로 감시·알림**하는 도구.
+**카카오톡 PC 대화방을 자동으로 순회하며 전체 대화를 수집·정리·백업하는 윈도우 전용 도구.**
+
+Automatically cycles through **every KakaoTalk chat room on Windows**, exports full history via `Ctrl+S`, accumulates into **SQLite**, and consolidates into **daily dated TXT files**. Also includes a **dashboard**, **full-text search**, **Excel export**, **media (photo/file) backup**, and a **relationship graph**. Read-only · unattended 24/7 · business-chat focused · fully offline.
+
+<sub>KakaoTalk scraper · KakaoTalk exporter · chat archiver · KakaoTalk backup · Windows chat automation · read-only messenger backup · 카카오톡 자동 수집 · 카카오톡 대화 백업 · 카카오톡 스크래퍼 · 카카오톡 대화 내보내기 · 카톡 백업</sub>
 
 ---
 
