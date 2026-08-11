@@ -1,10 +1,18 @@
 # kakao-auto — KakaoTalk Windows Auto Chat Collector & Archiver (카카오톡 자동 수집·백업)
 
+![platform](https://img.shields.io/badge/platform-Windows-0078D6)
+![python](https://img.shields.io/badge/python-3.9%2B-3776AB)
+![license](https://img.shields.io/github/license/AidanKR/kakao-auto)
+![stars](https://img.shields.io/github/stars/AidanKR/kakao-auto?style=flat)
+![last commit](https://img.shields.io/github/last-commit/AidanKR/kakao-auto)
+
 **카카오톡 PC 대화방을 자동으로 순회하며 전체 대화를 수집·정리·백업하는 윈도우 전용 도구.**
 
 Automatically cycles through **every KakaoTalk chat room on Windows**, exports full history via `Ctrl+S`, accumulates into **SQLite**, and consolidates into **daily dated TXT files**. Also includes a **dashboard**, **full-text search**, **Excel export**, **media (photo/file) backup**, and a **relationship graph**. Read-only · unattended 24/7 · business-chat focused · fully offline.
 
 <sub>KakaoTalk scraper · KakaoTalk exporter · chat archiver · KakaoTalk backup · Windows chat automation · read-only messenger backup · 카카오톡 자동 수집 · 카카오톡 대화 백업 · 카카오톡 스크래퍼 · 카카오톡 대화 내보내기 · 카톡 백업</sub>
+
+![Dashboard — who's waiting on you, activity heatmap, gone-quiet rooms](docs/dashboard.png)
 
 ---
 
@@ -24,6 +32,31 @@ Automatically cycles through **every KakaoTalk chat room on Windows**, exports f
 | ✅ **전제 조건** | 본인 소유 **업무 전용 계정** · **읽기 전용**(전송·자동발송 안 함) · **비공개 저장**(백업 암호화 권장). |
 
 > **ENGLISH — USE AT YOUR OWN RISK.** Independent, unofficial **personal archiving** tool, **NOT affiliated with Kakao**. Automating the KakaoTalk client **violates Kakao's Terms of Service** and may get your account suspended or terminated. It is **not hacking or wiretapping** — it reads your own messages, on your own PC, in conversations you are a party to. The collected data contains **other people's personal information**; **YOU are the data controller** and are solely responsible for lawful, secure handling under applicable privacy law (e.g., Korea's PIPA). **Own account only. Read-only. Private storage. No warranty. No liability. By using this software you accept full responsibility.** See [LICENSE](LICENSE).
+
+## Features (English)
+
+- **Auto-collect** every KakaoTalk chat room on Windows — cycle mode, unattended 24/7, self-healing watchdog.
+- **Full history export** via the app's own `Ctrl+S`, stored in **SQLite** (dedup, ISO timestamps, auto-migration).
+- **Daily TXT consolidation** to a shared / cloud (Google Drive) folder, by real message date and room.
+- **Dashboard** — who's still waiting on your reply, 14-day activity heatmap, gone-quiet clients.
+- **Full-text search** across every conversation at once (offline, self-contained HTML).
+- **Excel (.xlsx) export** — room list, pending replies, messages.
+- **Auto-extract** amounts, appointments, and bank accounts from chats (regex, no AI needed).
+- **Media backup** — save photos/files locally before KakaoTalk expires them.
+- **2D relationship graph**, reliability monitoring + alerts, encrypted rotating DB backups.
+- **Optional AI** daily briefing & reply drafts (OpenAI / Anthropic / local **Ollama** for privacy).
+- **100% local & offline. Read-only** — it never sends messages.
+
+![Full-text search across every chat](docs/search.png)
+
+## Quick Start (Windows)
+
+1. Run `1_install.bat` — installs Python deps (opens python.org if Python is missing; check "Add to PATH").
+2. Copy `config.example.json` → `config.json`, set `share_dir` (a local or Google Drive folder).
+3. Run `3_collect.bat` to test, then `5_autostart.bat` to register unattended 24/7 operation.
+4. View results anytime: `10_dashboard.bat`, `11_search.bat`, `12_excel.bat`, `9_viz.bat`, `13_extract.bat`.
+
+Prefer a single app? Run `build_exe.bat` once → `dist/KakaoAuto.exe`: one menu-driven executable, **no Python install required**.
 
 ## 신뢰성/모니터링 (무인 운영 안전장치)
 - **health.json** — 매 바퀴 상태 기록(수집 방수·커버리지·신규건수·오류). 공유폴더에도 복사.
