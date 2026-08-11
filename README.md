@@ -199,3 +199,33 @@ python summarize.py --room "영업1팀" --date 2026-07-07 --raw
 - 폴링 사이에 **화면 밖으로 스크롤된 과거 메시지**는 놓칠 수 있음 → `poll_seconds` 를 너무 길게 두지 말 것.
 - 카톡 업데이트 후 안 읽히면 `2_discover.bat` 다시 돌려 `list_class` 갱신.
 - 정리 로그: `consolidate.log`.
+
+## Disclaimer & Acceptable Use
+
+**kakao-auto** is an independent, unofficial personal archiving tool. It is not affiliated with, endorsed by, sponsored by, or connected to Kakao Corp. or KakaoTalk.
+
+"Kakao" and "KakaoTalk" are trademarks of their respective owner.
+
+This software does not grant or transfer any rights to Kakao's intellectual property, trademarks, services, or other proprietary rights.
+
+### Terms of Service
+
+Users are solely responsible for ensuring that their use of this software complies with applicable third-party terms of service, including Kakao's terms and policies.
+
+Using automation, scraping, or other non-standard methods with a third-party service may result in account restrictions or other consequences. Users should review and comply with the applicable terms before using this software.
+
+### Privacy and Personal Data
+
+kakao-auto may process conversation data or other information that can contain personal information.
+
+Users are solely responsible for determining whether and how their use of this software complies with applicable privacy and data-protection laws and regulations.
+
+Use this software only for lawful purposes and only with data that you are authorized to access and process.
+
+Do not use this software for unauthorized surveillance, interception of communications you are not a party to, unauthorized access, or any other unlawful purpose.
+
+### No Warranty
+
+This software is provided under the MIT License on an "AS IS" basis, without warranties of any kind.
+
+Users are responsible for their own use of the software and for compliance with applicable laws, regulations, and third-party terms of service.
