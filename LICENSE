@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 AidanKR
+Copyright (c) 2026 AidanKR <aidan.kr@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,14 @@ ADDITIONAL DISCLAIMER & ACCEPTABLE-USE NOTICE (READ BEFORE USE)
 ===============================================================================
 
 This software is an independent, unofficial PERSONAL ARCHIVING tool. It is NOT
-affiliated with, endorsed by, or connected to Kakao Corp. or KakaoTalk in any
-way. "KakaoTalk" and "Kakao" are trademarks of their respective owner.
+affiliated with, endorsed by, sponsored by, or connected to Kakao Corp. or
+KakaoTalk in any way. "KakaoTalk", "Kakao", and related names and logos are
+trademarks of Kakao Corp. Nothing in this software or license grants you any
+right, title, license, or interest in any intellectual property, trademark,
+service, product, or data of Kakao Corp. or any other third party. You must
+not use this software in any manner that infringes the rights of Kakao Corp.
+or any third party, or that violates KakaoTalk's Terms of Service; any such
+use is solely your responsibility.
 
 1. TERMS-OF-SERVICE RISK. Automating or scraping the KakaoTalk client violates
    KakaoTalk's Terms of Service. Using this software may result in suspension
@@ -51,6 +57,9 @@ way. "KakaoTalk" and "Kakao" are trademarks of their respective owner.
    applicable terms, laws, and regulations.
 
 한국어 요약: 본 소프트웨어는 카카오와 무관한 비공식 개인 아카이빙 도구입니다.
+"카카오/카카오톡"은 카카오의 상표이며, 본 소프트웨어·라이선스는 카카오의 어떤
+지식재산권도 부여하지 않습니다. 카카오나 제3자의 권리를 침해하거나 약관을
+위반하는 사용은 금지되며 그 책임은 전적으로 사용자에게 있습니다.
 카톡 클라이언트 자동화는 카카오 이용약관 위반이며(계정 정지 위험), 수집물에는
 타인의 개인정보가 포함되어 개인정보보호법 등 관련 법령 준수 책임은 전적으로
 사용자에게 있습니다. 본인 소유 계정·본인이 당사자인 대화·적법한 목적에 한해
