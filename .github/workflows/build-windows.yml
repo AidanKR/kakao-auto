@@ -79,6 +79,8 @@ jobs:
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
+          body_path: RELEASE_NOTES.md
+          generate_release_notes: true
           files: |
             dist/KakaoAuto.exe
             installer_out/KakaoAuto-Setup.exe
