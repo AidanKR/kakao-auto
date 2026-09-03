@@ -36,6 +36,7 @@ MENU = """
  11) 무인 자동 설정 (매일 새벽 02:00 → 전체 수집 → 정리 → 종료)
  12) 무인 자동 해제
  13) 방별 CSV 내보내기 (방 하나당 CSV 하나 · 서버 분석용)
+ 14) 진단: 카톡 창 구조 저장 (채팅 탭 안 잡힐 때)
   0) 종료
 ============================================"""
 
@@ -272,6 +273,8 @@ def _run_cli(cmd):
         _nightly()
     elif cmd in ("csv", "rooms-csv"):
         _run("export_rooms_csv")
+    elif cmd in ("diag", "진단"):
+        _run("diag_kakao")
     elif cmd in ("collect", "collector"):
         _run("collector")
     elif cmd in ("consolidate", "정리"):
@@ -307,6 +310,7 @@ def main():
         "11": setup_autostart,
         "12": remove_autostart,
         "13": lambda: _run("export_rooms_csv"),
+        "14": lambda: (_run("diag_kakao"), _open(APP / "kakao_tree.txt")),
     }
     while True:
         print(MENU)
