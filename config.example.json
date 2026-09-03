@@ -22,8 +22,11 @@
   "row_height": 62,
   "_row_height": "cycle: 채팅목록 한 줄 높이(px). 방을 건너뛰면 줄이고(55), 같은 방 반복이면 늘리세요(68).",
 
+  "chat_tab_hotkey": "{Ctrl}(2)",
+  "_chat_tab_hotkey": "카톡 채팅 탭 전환 단축키(가장 확실). 기본 Ctrl+2. 카톡 버전이 다르면 바꾸거나 \"\"로 끄기.",
+
   "chat_tab_offset": [24, 132],
-  "_chat_tab_offset": "카톡이 친구/프로필 탭에서 시작할 때 '채팅' 탭 자동클릭 좌표(창 좌상단 기준 [x,y]px). UIA로 안 되면 이 좌표로 클릭. 안 맞으면 조절.",
+  "_chat_tab_offset": "단축키·UIA 다 실패 시 '채팅' 탭 클릭 좌표(창 좌상단 기준 [x,y]px). 안 맞으면 조절.",
 
   "list_top_pad": 6,
   "_list_top_pad": "cycle: 목록 맨 위 여백(px). 첫 방을 놓치면 조절.",

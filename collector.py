@@ -160,6 +160,17 @@ def activate_chat_tab(main, cfg=None):
         time.sleep(0.2)
     except Exception:
         pass
+    # 0) 단축키 — 카톡 PC: Ctrl+2 = 채팅 탭(가장 확실). config chat_tab_hotkey 로 조절.
+    hotkey = (cfg or {}).get("chat_tab_hotkey", "{Ctrl}(2)")
+    if hotkey:
+        try:
+            auto.SendKeys(hotkey)
+            time.sleep(0.6)
+            if _chat_list_ready(main):
+                print("  채팅 탭으로 전환함(단축키 Ctrl+2).")
+                return True
+        except Exception:
+            pass
     # 1) UIA 이름에 '채팅' 들어간 요소를 모두 찾아 하나씩 눌러본다(탭 버튼 우선).
     cands = find_all_by_name_contains(main, "채팅")
     # 이름이 정확히 '채팅' 인 것(탭 버튼일 확률↑)을 앞으로
