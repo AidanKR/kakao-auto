@@ -60,6 +60,19 @@ Automatically cycles through **every KakaoTalk chat room on Windows**, exports f
 
 Prefer a single app? Run `build_exe.bat` once → `dist/KakaoAuto.exe`: one menu-driven executable, **no Python install required**.
 
+## Install (Windows installer) · 윈도우 설치
+
+**No Python, no build.** Download the installer from **[Releases](https://github.com/AidanKR/kakao-auto/releases/latest)** → `KakaoAuto-Setup.exe`, run it, and launch KakaoAuto from the Start menu.
+
+1. Open **[Releases](https://github.com/AidanKR/kakao-auto/releases/latest)** and download **`KakaoAuto-Setup.exe`**.
+2. Run it. Windows may show **"Windows protected your PC"** (the app is unsigned) → click **More info → Run anyway**. This is expected for open-source apps without a paid code-signing certificate.
+3. Launch **KakaoAuto** from the Start menu. It installs to a user folder (`%LOCALAPPDATA%\KakaoAuto`), where it keeps `config.json` and `kakao.db`.
+4. Edit `config.json` (Start menu → *Edit config.json*): set `share_dir` to a local or Google Drive folder, then use the menu.
+
+한국어: 파이썬 설치 없이 됩니다. **Releases**에서 `KakaoAuto-Setup.exe`를 받아 실행하세요. "Windows가 PC를 보호했습니다" 창이 뜨면 **추가 정보 → 실행**을 누르면 됩니다(서명 인증서가 없는 오픈소스라 정상입니다). 설치 후 시작 메뉴에서 **KakaoAuto** 실행 → *Edit config.json* 으로 `share_dir` 만 지정하면 끝입니다.
+
+> The installer is built automatically on a Windows CI runner (see `.github/workflows/build-windows.yml`) — the maintainer does not build it by hand.
+
 ## 신뢰성/모니터링 (무인 운영 안전장치)
 - **health.json** — 매 바퀴 상태 기록(수집 방수·커버리지·신규건수·오류). 공유폴더에도 복사.
 - **자동 알림**(`alerts.py`) — 커버리지 저하/카톡 미실행/오류 시 **공유폴더 `ALERT.txt` + 웹훅**(선택)으로 통지.

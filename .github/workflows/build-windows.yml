@@ -1,0 +1,76 @@
+name: Build Windows Installer
+
+# Builds KakaoAuto.exe (PyInstaller) and KakaoAuto-Setup.exe (Inno Setup)
+# on a Windows runner — no local Windows machine needed.
+#  - Run manually:  Actions tab -> "Build Windows Installer" -> Run workflow
+#  - On a version tag (v1.2.3): also attaches the installer to the GitHub Release
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install -r requirements.txt
+
+      - name: Build KakaoAuto.exe (PyInstaller)
+        shell: cmd
+        run: >
+          pyinstaller --onefile --name KakaoAuto
+          --collect-submodules uiautomation
+          --collect-submodules comtypes
+          --hidden-import win32gui --hidden-import win32con
+          --hidden-import win32api --hidden-import win32process
+          --hidden-import openpyxl --hidden-import cryptography
+          kakao.py
+
+      - name: Resolve version
+        id: ver
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF_TYPE -eq "tag") {
+            $v = "$env:GITHUB_REF_NAME".TrimStart("v")
+          } else {
+            $v = "0.0.0-dev"
+          }
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Build installer (Inno Setup)
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion=${{ steps.ver.outputs.version }} installer.iss
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: KakaoAuto-Windows
+          path: |
+            dist/KakaoAuto.exe
+            installer_out/KakaoAuto-Setup.exe
+          if-no-files-found: error
+
+      - name: Attach to GitHub Release (on tag)
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/KakaoAuto.exe
+            installer_out/KakaoAuto-Setup.exe
+          fail_on_unmatched_files: true
