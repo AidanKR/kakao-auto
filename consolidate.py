@@ -5,7 +5,7 @@ DB(kakao.db)를 공유폴더(share_dir)에 **실제 메시지 날짜(sent_date)�
 기본은 '증분': 지난 정리 이후 새로 수집된 메시지가 속한 날짜만 다시 쓴다(구글드라이브 동기화 최소화).
 --all 이면 모든 날짜를 재생성(초기 백필용).
 
-출력(share_dir 아래):
+출력(share_dir 아래) — 날짜 폴더는 txt_subdir(기본 'txt') 안에 모아 루트를 깨끗하게:
     2026-07-07/ _전체.txt, 방이름.txt ...
     rooms_seen.txt, kakao.db(copy_db)
 
@@ -112,6 +112,12 @@ def main():
         print(f"[오류] 공유폴더 생성 실패: {share_dir}\n  {e}")
         return
 
+    # 날짜 폴더가 공유폴더 루트에 잔뜩 쌓이지 않도록 하위 폴더(기본 'txt')에 모은다.
+    # txt_subdir 를 "" 로 두면 예전처럼 루트에 바로 만든다.
+    sub = str(cfg.get("txt_subdir", "txt")).strip()
+    txt_base = (share_dir / sub) if sub else share_dir
+    txt_base.mkdir(parents=True, exist_ok=True)
+
     conn = db.connect()
     stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     run_start = datetime.now().isoformat(timespec="seconds")
@@ -129,8 +135,8 @@ def main():
         for day in days:
             grouped = fetch_day(conn, day)
             if grouped:
-                total += write_day(share_dir, day, grouped, stamp)
-        print(f"정리 완료: 날짜 {len(days)}개 / 총 {total}건 → {share_dir}")
+                total += write_day(txt_base, day, grouped, stamp)
+        print(f"정리 완료: 날짜 {len(days)}개 / 총 {total}건 → {txt_base}")
 
     # 전체 방 목록 항상 최신본
     try:

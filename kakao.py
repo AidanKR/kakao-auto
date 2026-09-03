@@ -196,8 +196,9 @@ def _nightly():
         _start_kakao(cfg)
     print("- 전체 대화 1회 수집...")
     _run("collector", ["once"])
-    print("- 정리(날짜·방별 TXT)...")
-    _run("consolidate")
+    if cfg.get("nightly_txt", True):
+        print("- 정리(날짜·방별 TXT)...")
+        _run("consolidate")
     print("- 방별 CSV 내보내기(share_dir/csv/<방>/<방>.csv)...")
     _run("export_rooms_csv")
     if cfg.get("nightly_media", True):

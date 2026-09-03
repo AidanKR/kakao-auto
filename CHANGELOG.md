@@ -3,6 +3,10 @@
 All notable changes to **kakao-auto** are documented here.
 Downloads: [Releases](https://github.com/AidanKR/kakao-auto/releases) · one-click Windows installer (`KakaoAuto-Setup.exe`).
 
+## v1.1.1
+- **공유폴더 정리** — 날짜 폴더가 루트에 쌓이던 것을 **`txt/` 하위로** 모았습니다(`txt_subdir`, 기본 `"txt"`). 루트는 `csv/ · txt/ · media/ · kakao.db` 만 남아 깔끔합니다.
+- **TXT 아예 끄기** — CSV만 쓰면 `nightly_txt: false` 로 두면 날짜 폴더가 생기지 않습니다.
+
 ## v1.1.0 (최종형)
 - **[Enter] 한 번 = 전체 실행** — 메뉴에서 그냥 Enter 만 누르면 **수집 → 정리(TXT) → 방별 CSV → 사진 백업**이 한 번에 이어집니다. 숫자를 여러 번 누를 필요 없음(개별 실행은 그대로 1~14).
 - **운영 방식 = 카톡 켜둔 채로** — `close_kakao_after` 기본값을 `false`로. 카카오톡을 **'채팅' 탭에 켜두면** 배치가 실행·종료를 건드리지 않고 바로 수집합니다(가장 안정적).
