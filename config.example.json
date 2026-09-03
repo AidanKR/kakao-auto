@@ -35,7 +35,19 @@
   "_share_dir": "정리 결과 저장 폴더(/ 로!). 공유폴더 예: //서버/공유/kakao",
 
   "nightly_time": "02:00",
-  "_nightly_time": "무인 자동(메뉴 11)에서 매일 이 시각(HH:MM, 이 PC 로컬시간=한국이면 한국시간)에 '전체 수집→정리→종료' 배치 실행.",
+  "_nightly_time": "무인 자동(메뉴 11)에서 매일 이 시각(HH:MM, 이 PC 로컬시간=한국이면 한국시간)에 '카톡실행→전체 수집→정리→방별CSV→카톡종료' 배치 실행.",
+
+  "kakao_exe": "",
+  "_kakao_exe": "KakaoTalk.exe 전체경로(비우면 자동탐지). 예: C:/Program Files (x86)/Kakao/KakaoTalk/KakaoTalk.exe",
+
+  "kakao_boot_wait": 40,
+  "_kakao_boot_wait": "야간배치에서 카톡 실행 후 자동로그인/로딩 대기 초. 느린 PC면 늘리기(60~90).",
+
+  "close_kakao_after": true,
+  "_close_kakao_after": "야간배치가 끝나면 카톡도 종료할지(taskkill). false면 켜둠.",
+
+  "nightly_media": true,
+  "_nightly_media": "야간배치에 사진 백업 포함할지(이모티콘 제외). false면 CSV까지만.",
 
   "copy_db": true,
   "_copy_db": "true면 정리 시 kakao.db 사본도 공유폴더에 복사.",
@@ -101,6 +113,18 @@
 
   "media_out": "",
   "_media_out": "미디어 저장 폴더(비우면 share_dir/media). 클라우드로 하려면 구글드라이브 경로.",
+
+  "skip_emoticons": true,
+  "_skip_emoticons": "이모티콘/스티커 제외(실제 사진만). 폴더/파일명에 emoticon·sticker 등 포함되면 건너뜀.",
+
+  "image_only": false,
+  "_image_only": "true면 이미지 확장자만(영상·문서·zip 제외). '사진만' 원하면 true.",
+
+  "media_min_bytes": 20000,
+  "_media_min_bytes": "이 크기(바이트) 미만 '이미지'는 이모티콘/썸네일로 보고 제외(기본 20KB). 0=크기필터 끔.",
+
+  "emoticon_markers": [],
+  "_emoticon_markers": "이모티콘 판별용 폴더/파일명 키워드(비우면 기본값: emoticon,sticker,이모티콘,스티커,digitalitem,theme).",
 
   "_백업설정": "── DB 백업/암호화(④) ──",
 

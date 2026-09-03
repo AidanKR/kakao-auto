@@ -73,7 +73,11 @@ Prefer a single app? Run `build_exe.bat` once → `dist/KakaoAuto.exe`: one menu
 
 **무인 자동 — 매일 새벽 배치(exe):** KakaoAuto 메뉴에서 **`11` (무인 자동 설정)** 을 한 번 누르면, 매일 **02:00**(이 PC 로컬시간)에 **전체 수집 → 정리 → 방별 CSV → 자동 종료**하는 예약작업이 등록됩니다(관리자 권한 불필요, 절전도 끔). 시각은 `config.json` 의 `"nightly_time": "02:00"` 로 변경. 그 시각에 PC가 켜져 있고 로그인·잠금해제 상태여야 하며, 카톡은 "PC 켤 때 자동 실행 + 자동 로그인"을 켜두세요. 해제는 **`12`**. (명령줄로도: `KakaoAuto.exe nightly` / `collect` / `consolidate` / `csv` / `autostart` / `autostart-off`)
 
-**방별 CSV(서버 분석용):** 메뉴 **`13`** (또는 야간 배치에 포함) — DB를 **방 하나당 CSV 하나**로 `share_dir/csv/` 에 내보냅니다(`<방이름>.csv` + 방 목록 `_rooms_index.csv`). 컬럼 `room,date,time,datetime,sender,message`, `utf-8-sig`(엑셀·pandas 그대로). 메인 서버로 옮겨 분석하기 좋게 매 실행 전량 갱신.
+**방별 CSV(서버 분석용):** 메뉴 **`13`** (또는 야간 배치에 포함) — DB를 **방마다 폴더 하나 + 그 안에 CSV 하나**로 `share_dir/csv/<방이름>/<방이름>.csv` 에 내보냅니다(+ 방 목록 `_rooms_index.csv`). 컬럼 `room,date,time,datetime,sender,message`, `utf-8-sig`(엑셀·pandas 그대로). 매 실행 전량 갱신.
+
+**야간 배치 전체 흐름(메뉴 11, 매일 02:00):** ①카톡 자동 실행(자동 로그인 전제) → ②전체 1회 수집 → ③정리(TXT) → ④방별 CSV → ⑤사진 백업(이모티콘/스티커 제외) → ⑥카톡 종료 → 작업 종료. `config.json` 으로 조절: `kakao_exe`/`kakao_boot_wait`(카톡 실행·로그인 대기), `close_kakao_after`(끝나고 카톡 끄기), `nightly_media`(사진 포함 여부).
+
+**사진만(이모티콘 제외):** `media_backup` 은 `skip_emoticons`(기본 true)로 이모티콘/스티커 캐시 폴더와 작은 썸네일(`media_min_bytes` 미만 이미지)을 건너뛰고 **실제 사진만** 백업합니다. `image_only: true` 면 영상·문서 제외하고 이미지만.
 
 > The installer is built automatically on a Windows CI runner (see `.github/workflows/build-windows.yml`) — the maintainer does not build it by hand.
 

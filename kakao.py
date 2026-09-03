@@ -112,15 +112,93 @@ def _nightly_time():
     return "02:00"
 
 
+def _load_cfg():
+    import json
+    try:
+        return json.loads((APP / "config.json").read_text(encoding="utf-8-sig"))
+    except Exception:
+        try:
+            return json.loads((APP / "config.json").read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+
+
+_KAKAO_CANDIDATES = [
+    r"C:\Program Files (x86)\Kakao\KakaoTalk\KakaoTalk.exe",
+    r"C:\Program Files\Kakao\KakaoTalk\KakaoTalk.exe",
+    os.path.join(os.environ.get("LOCALAPPDATA", ""), r"Programs\Kakao\KakaoTalk\KakaoTalk.exe"),
+]
+
+
+def _kakao_running():
+    import subprocess
+    try:
+        out = subprocess.run(["tasklist", "/FI", "IMAGENAME eq KakaoTalk.exe"],
+                             capture_output=True, text=True)
+        return "KakaoTalk.exe" in (out.stdout or "")
+    except Exception:
+        return False
+
+
+def _find_kakao_exe(cfg):
+    p = cfg.get("kakao_exe")
+    if p and os.path.exists(p):
+        return p
+    for c in _KAKAO_CANDIDATES:
+        if c and os.path.exists(c):
+            return c
+    return None
+
+
+def _start_kakao(cfg):
+    """카톡이 꺼져 있으면 실행하고 로그인될 때까지 잠깐 대기. (자동 로그인 전제)"""
+    import subprocess
+    import time
+    if _kakao_running():
+        print("  카톡 이미 실행 중.")
+        return True
+    exe = _find_kakao_exe(cfg)
+    if not exe:
+        print("  [경고] KakaoTalk.exe 경로를 못 찾음 — config 의 kakao_exe 를 지정하세요.")
+        return False
+    try:
+        subprocess.Popen([exe])
+    except Exception as e:
+        print(f"  [경고] 카톡 실행 실패: {e}")
+        return False
+    wait = int(cfg.get("kakao_boot_wait", 40))
+    print(f"  카톡 실행 → 자동 로그인 대기 {wait}초...")
+    time.sleep(wait)
+    return _kakao_running()
+
+
+def _stop_kakao():
+    import subprocess
+    subprocess.run(["taskkill", "/IM", "KakaoTalk.exe", "/F", "/T"],
+                   capture_output=True, text=True)
+    print("  카톡 종료함.")
+
+
 def _nightly():
-    """[야간 배치] 전체 1회 수집 → 정리(TXT) → 방별 CSV → 종료. 예약작업이 이걸 호출."""
+    """[야간 배치] 카톡 실행 → 전체 1회 수집 → 정리(TXT) → 방별 CSV → (사진 백업) → 카톡 종료."""
+    cfg = _load_cfg()
+    win = sys.platform.startswith("win")
     print("=== KakaoAuto 야간 배치 시작 ===")
-    print("[1/3] 전체 대화 1회 수집...")
+    if win:
+        print("- 카톡 실행/확인...")
+        _start_kakao(cfg)
+    print("- 전체 대화 1회 수집...")
     _run("collector", ["once"])
-    print("[2/3] 정리(날짜·방별 TXT)...")
+    print("- 정리(날짜·방별 TXT)...")
     _run("consolidate")
-    print("[3/3] 방별 CSV 내보내기(share_dir/csv)...")
+    print("- 방별 CSV 내보내기(share_dir/csv/<방>/<방>.csv)...")
     _run("export_rooms_csv")
+    if cfg.get("nightly_media", True):
+        print("- 사진 백업(이모티콘/스티커 제외)...")
+        _run("media_backup")
+    if win and cfg.get("close_kakao_after", True):
+        print("- 카톡 종료...")
+        _stop_kakao()
     print("=== 완료. 종료합니다. ===")
 
 

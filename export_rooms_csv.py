@@ -2,9 +2,9 @@
 방별 CSV 내보내기 — 방 하나당 CSV 파일 하나. 메인서버에서 분석용.
 
 DB(kakao.db)의 모든 메시지를 방별로 갈라 CSV로 저장한다(매 실행 전량 덮어쓰기).
-출력(기본: share_dir/csv/ 아래):
-    <방이름>.csv          ← 방 하나당 하나. 컬럼: room,date,time,datetime,sender,message
-    _rooms_index.csv      ← 방 목록·파일명·건수·처음/마지막 시각(서버에서 훑기 좋게)
+출력(기본: share_dir/csv/ 아래) — 방마다 폴더 하나, 그 안에 CSV 하나:
+    <방이름>/<방이름>.csv  ← 방 하나당 폴더+CSV. 컬럼: room,date,time,datetime,sender,message
+    _rooms_index.csv       ← 방 목록·경로·건수·처음/마지막 시각(서버에서 훑기 좋게)
 
 인코딩은 utf-8-sig(BOM) — 엑셀에서 한글 안 깨지고, pandas.read_csv 도 그대로 읽힘.
 content 안의 쉼표·줄바꿈·따옴표는 csv 모듈이 표준 규칙으로 안전하게 처리한다.
@@ -65,15 +65,19 @@ def export(conn, out_dir):
 
     used, index = set(), []
     for room, rows in rows_by_room.items():
-        fname = _unique(safe_name(room), used) + ".csv"
-        with (out_dir / fname).open("w", encoding="utf-8-sig", newline="") as f:
+        # 방마다 폴더 하나 → 그 안에 CSV 하나(같은 이름).
+        folder = _unique(safe_name(room), used)
+        room_dir = out_dir / folder
+        room_dir.mkdir(parents=True, exist_ok=True)
+        rel = f"{folder}/{folder}.csv"
+        with (room_dir / f"{folder}.csv").open("w", encoding="utf-8-sig", newline="") as f:
             w = csv.writer(f)
             w.writerow(["room", "date", "time", "datetime", "sender", "message"])
             for sent_date, sent_at, sender, content in rows:
                 t = sent_at[11:16] if sent_at and "T" in sent_at else ""
                 w.writerow([room, sent_date or "", t, sent_at or "",
                             sender or "", content or ""])
-        index.append((room, fname, len(rows),
+        index.append((room, rel, len(rows),
                       rows[0][1] or "", rows[-1][1] or ""))
 
     with (out_dir / "_rooms_index.csv").open("w", encoding="utf-8-sig", newline="") as f:

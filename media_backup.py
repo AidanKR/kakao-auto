@@ -28,9 +28,13 @@ from pathlib import Path
 import briefing
 
 HERE = __import__("appdir").APP_DIR
-EXTS = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".heic",
-        ".mp4", ".mov", ".avi", ".mkv", ".m4a", ".mp3",
-        ".pdf", ".hwp", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".zip"}
+IMG_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".heic"}
+EXTS = IMG_EXTS | {".mp4", ".mov", ".avi", ".mkv", ".m4a", ".mp3",
+                  ".pdf", ".hwp", ".doc", ".docx", ".xls", ".xlsx",
+                  ".ppt", ".pptx", ".zip"}
+# 이모티콘/스티커는 보통 이런 이름의 캐시 폴더에 들어있고 크기가 작다.
+EMOTICON_MARKERS = ["emoticon", "sticker", "이모티콘", "스티커",
+                    "digitalitem", "spritecon", "theme"]
 
 
 def candidate_dirs(cfg):
@@ -78,7 +82,15 @@ def main():
         Path(cfg.get("media_out") or (cfg.get("share_dir") or (HERE / "share")) ) / "media"
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
-    exts = set(cfg.get("media_exts") or EXTS)
+
+    # 실제 이미지만(이모티콘/스티커 제외) 옵션
+    image_only = bool(cfg.get("image_only", False))
+    exts = set(cfg.get("media_exts") or (IMG_EXTS if image_only else EXTS))
+    skip_emo = cfg.get("skip_emoticons", True)
+    markers = [m.lower() for m in (cfg.get("emoticon_markers") or EMOTICON_MARKERS)]
+    # 이모티콘/썸네일 걸러낼 최소 크기(이미지에만 적용). 0이면 크기필터 끔.
+    min_bytes = int(cfg.get("media_min_bytes", 20000))
+
     cutoff = None
     if args.days:
         cutoff = (datetime.now() - timedelta(days=args.days)).timestamp()
@@ -94,20 +106,31 @@ def main():
     idx_path = out / "media_index.txt"
     seen = load_index(idx_path)
     new_hashes = []
-    copied = skipped = scanned = 0
+    copied = skipped = scanned = emoticon_skipped = 0
 
     for d in dirs:
         for root, _, files in os.walk(d):
+            root_low = root.lower()
+            # 이모티콘/스티커 캐시 폴더 통째로 건너뜀
+            if skip_emo and any(m in root_low for m in markers):
+                continue
             for fn in files:
                 ext = Path(fn).suffix.lower()
                 if ext not in exts:
                     continue
                 src = Path(root) / fn
+                if skip_emo and any(m in fn.lower() for m in markers):
+                    emoticon_skipped += 1
+                    continue
                 try:
                     st = src.stat()
                 except Exception:
                     continue
                 if cutoff and st.st_mtime < cutoff:
+                    continue
+                # 실제 사진만: 너무 작은 이미지(이모티콘/썸네일)는 제외
+                if skip_emo and min_bytes and ext in IMG_EXTS and st.st_size < min_bytes:
+                    emoticon_skipped += 1
                     continue
                 scanned += 1
                 try:
@@ -131,7 +154,8 @@ def main():
         with idx_path.open("a", encoding="utf-8") as f:
             f.write("\n".join(new_hashes) + "\n")
 
-    print(f"미디어 백업: 새로 {copied}개 복사 · 중복 {skipped} · 스캔 {scanned} → {out}")
+    print(f"미디어 백업: 새로 {copied}개 복사 · 중복 {skipped} · 스캔 {scanned}"
+          f" · 이모티콘/스티커 제외 {emoticon_skipped} → {out}")
     if copied == 0 and scanned == 0:
         print("  ⚠ 대상 파일을 못 찾음. 카톡 '받은 파일 저장 위치'를 config media_dirs 에 지정하세요.")
 
