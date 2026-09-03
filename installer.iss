@@ -45,6 +45,7 @@ Source: "config.example.json";    DestDir: "{app}"; Flags: ignoreversion
 Source: "config.example.json";    DestDir: "{app}"; DestName: "config.json"; Flags: onlyifdoesntexist
 Source: "README.md";              DestDir: "{app}"; Flags: ignoreversion isreadme
 Source: "LICENSE";                DestDir: "{app}"; Flags: ignoreversion
+Source: "NOTICE";                 DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}";               Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
