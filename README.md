@@ -221,32 +221,51 @@ python summarize.py --room "영업1팀" --date 2026-07-07 --raw
 - 카톡 업데이트 후 안 읽히면 `2_discover.bat` 다시 돌려 `list_class` 갱신.
 - 정리 로그: `consolidate.log`.
 
+## License
+
+**Apache License 2.0** — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+Commercial use, modification, and redistribution are permitted free of charge. In return, Apache 2.0 requires that you:
+
+- keep the copyright, patent, trademark, and attribution notices,
+- **reproduce the contents of the [NOTICE](NOTICE) file** in any redistribution or derivative work (Section 4(d)), which is how the original author is credited,
+- state that you changed any files you modified, and
+- include a copy of the License.
+
+It also grants an explicit patent license to users, and terminates that patent grant for anyone who starts patent litigation over the work.
+
+> Created and maintained by **AidanKR (Lee Donghyuk)** — https://github.com/AidanKR/kakao-auto
+
 ## Disclaimer & Acceptable Use
 
-**kakao-auto** is an independent, unofficial personal archiving tool. It is not affiliated with, endorsed by, sponsored by, or connected to Kakao Corp. or KakaoTalk.
+**kakao-auto is an independent, unofficial personal archiving tool. It is NOT affiliated with, endorsed by, sponsored by, or connected to Kakao Corp. or KakaoTalk.**
 
-"Kakao" and "KakaoTalk" are trademarks of their respective owner.
+"Kakao" and "KakaoTalk" are trademarks of Kakao Corp. Neither this software nor its license grants any right, title, license, or interest in any intellectual property, trademark, service, product, or data of Kakao Corp. or any other third party.
 
-This software does not grant or transfer any rights to Kakao's intellectual property, trademarks, services, or other proprietary rights.
+### Terms of Service — read this before you install
 
-### Terms of Service
+Automating, scraping, or otherwise driving the KakaoTalk desktop client **violates KakaoTalk's Terms of Service.** Using this software may result in **restriction, suspension, or permanent termination of your KakaoTalk account**, and Kakao may take other measures at its discretion. **That risk is entirely yours.** If you are not willing to accept it, do not use this software.
 
-Users are solely responsible for ensuring that their use of this software complies with applicable third-party terms of service, including Kakao's terms and policies.
+Kakao may change its client or its terms at any time, which can break this tool or increase the risk of using it, without notice.
 
-Using automation, scraping, or other non-standard methods with a third-party service may result in account restrictions or other consequences. Users should review and comply with the applicable terms before using this software.
+### Privacy and personal data — you are the data controller
 
-### Privacy and Personal Data
+Conversation archives created with this software contain **other people's personal information**: names, phone numbers, addresses, order details, photographs, and more.
 
-kakao-auto may process conversation data or other information that can contain personal information.
+**You — not the author — are the data controller.** You are solely responsible for determining whether and how your use complies with applicable privacy and data-protection law, including the **Personal Information Protection Act (PIPA)** of the Republic of Korea and any equivalent law in your jurisdiction. That includes having a lawful basis, limiting purpose and retention, applying security safeguards (the tool ships optional AES backup encryption for this reason), and honoring access and deletion requests from data subjects.
 
-Users are solely responsible for determining whether and how their use of this software complies with applicable privacy and data-protection laws and regulations.
+Use only on an account you own, only for conversations you are a party to, and only for lawful purposes. **Do not** use this software for surveillance of others, unauthorized access, interception of communications you are not a party to, employee monitoring without a lawful basis, or any other unlawful purpose.
 
-Use this software only for lawful purposes and only with data that you are authorized to access and process.
+If you deploy this inside a company, treat the archive as a regulated personal-data store: restrict access, document the purpose, and set a retention period.
 
-Do not use this software for unauthorized surveillance, interception of communications you are not a party to, unauthorized access, or any other unlawful purpose.
+### No warranty, no liability
 
-### No Warranty
+This software is provided under the Apache License 2.0 on an **"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND**, either express or implied. See Sections 7 and 8 of the [LICENSE](LICENSE).
 
-This software is provided under the MIT License on an "AS IS" basis, without warranties of any kind.
+To the maximum extent permitted by law, the author shall not be liable for any damages, data loss, account restriction or termination, regulatory penalty, or legal claim arising from your use or misuse of this software.
 
-Users are responsible for their own use of the software and for compliance with applicable laws, regulations, and third-party terms of service.
+**This document is not legal advice.** If you intend to use this in a business context, get your own legal review first.
+
+### Not affiliated, not an exploit
+
+This tool does not break encryption, bypass authentication, or access anything you cannot already see yourself. It drives the KakaoTalk client's own **export** feature on your own machine, in conversations you are already a member of. It is **read-only** — it never sends a message. That does not make it compliant with Kakao's terms; see above.

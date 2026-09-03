@@ -1,0 +1,48 @@
+kakao-auto
+Copyright 2026 AidanKR (Lee Donghyuk)
+
+Original author and creator: AidanKR (Lee Donghyuk)
+Project home: https://github.com/AidanKR/kakao-auto
+
+This product includes software developed by AidanKR (Lee Donghyuk).
+
+Licensed under the Apache License, Version 2.0 (the "License").
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+If you redistribute this software or a derivative work of it, in source or
+binary form, you must reproduce the attribution notices in this NOTICE file,
+as required by Section 4(d) of the License.
+
+--------------------------------------------------------------------------
+TRADEMARKS AND AFFILIATION
+
+"Kakao" and "KakaoTalk" are trademarks of Kakao Corp. This project is an
+independent, unofficial personal archiving tool. It is NOT affiliated with,
+endorsed by, sponsored by, or connected to Kakao Corp. in any way. Neither
+this software nor its license grants any right, title, license, or interest
+in any intellectual property, trademark, service, product, or data of Kakao
+Corp. or any other third party.
+
+--------------------------------------------------------------------------
+USE AT YOUR OWN RISK
+
+Automating, scraping, or otherwise driving the KakaoTalk desktop client
+violates KakaoTalk's Terms of Service and may result in restriction,
+suspension, or termination of your account. You accept that risk entirely.
+
+Conversation data collected with this software contains the personal
+information of other people. You, the user, are the data controller and are
+solely responsible for compliance with all applicable privacy and data
+protection laws, including the Personal Information Protection Act (PIPA) of
+the Republic of Korea: lawful basis, security safeguards, purpose limitation,
+retention limits, and responding to deletion requests.
+
+Use only on an account you own, only for conversations you are a party to,
+and only for lawful purposes. Do not use this software for surveillance of
+others, unauthorized access, interception of communications you are not a
+party to, or any other unlawful purpose.
+
+THE SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND. To the maximum extent permitted by law, the author
+shall not be liable for any damages, losses, account actions, regulatory
+penalties, or legal claims arising from your use or misuse of this software.
