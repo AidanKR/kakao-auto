@@ -204,7 +204,12 @@ def activate_chat_tab(main, cfg=None):
     except Exception:
         return False
     nav_x = r.left + int(cfg.get("chat_tab_nav_x", 33))          # 내비 폭 66 의 가운데
-    ys = cfg.get("chat_tab_scan_y") or [103, 96, 110, 88, 120, 55, 151, 72, 135, 170]
+    # 후보 y: 내비 맨 위에 프로필 사진이 있는 버전(채팅≈180~230)과 없는 버전(채팅≈96~110)
+    # 둘 다 먼저 훑고, 그 다음 넓게. 맨 위(프로필 사진)는 팝업이 뜰 수 있어 마지막에.
+    ys = cfg.get("chat_tab_scan_y") or [
+        103, 96, 110, 185, 200, 215, 230, 88, 120, 170, 245, 260,
+        135, 151, 275, 290, 305, 320, 72, 55, 64, 48,
+    ]
     for y in ys:
         try:
             auto.Click(nav_x, r.top + int(y), simulateMove=False)
@@ -212,9 +217,17 @@ def activate_chat_tab(main, cfg=None):
             if _chat_list_ready(main, cfg):
                 print(f"  채팅 탭으로 전환함(내비 클릭 x={nav_x - r.left}, y={y}).")
                 return True
+            # 엉뚱한 걸 눌러 팝업/다른 탭이 떴으면 닫고 메인창 다시 포커스
+            try:
+                auto.SendKeys("{Esc}", waitTime=0.05)
+            except Exception:
+                pass
+            time.sleep(0.2)
+            _focus_window(main, cfg)
         except Exception:
             continue
-    print("  채팅 탭 전환 실패 — 카톡 창을 크게 두고, config 의 chat_tab_scan_y 에 채팅 아이콘 y를 넣어주세요.")
+    print(f"  채팅 탭 전환 실패 — 창 크기 {r.right - r.left}x{r.bottom - r.top}. "
+          "카톡에서 채팅 아이콘의 위치(창 위에서 몇 px)를 config chat_tab_scan_y 맨 앞에 넣어주세요.")
     return False
 
 
