@@ -694,6 +694,7 @@ def main():
     print("Ctrl+C 로 종료.\n")
     prev_status = "ok"
     kakao_missing_streak = 0
+    error_streak = 0
     try:
         while True:
             now = datetime.now()
@@ -728,12 +729,24 @@ def main():
             if kakao_missing_streak == th:
                 alerts.notify(cfg, "CRITICAL", f"카톡이 {th}주기째 미실행/로그아웃 상태 — 수집 중단됨")
 
-            # 상태가 나빠지는 전환에서만 알림(스팸 방지)
+            # 오류 지속 추적 — 일시적 오류(예: UIA COMError)는 다음 주기에 대개 복구되므로
+            # 한 번 났다고 CRITICAL로 과잉경보하지 않는다. 여러 주기 연속 지속될 때만 CRITICAL.
+            if stats.get("error") or stats["status"] == "error":
+                error_streak += 1
+            else:
+                error_streak = 0
+
+            # 상태가 나빠지는 전환에서만 알림(스팸 방지) — 전환은 WARN까지만.
             rank = {"ok": 0, "warn": 1, "error": 2}
             if rank.get(stats["status"], 0) > rank.get(prev_status, 0):
-                lvl = "CRITICAL" if stats["status"] == "error" else "WARN"
                 if stats.get("kakao_running", True):   # 카톡미실행은 위에서 별도 처리
-                    alerts.notify(cfg, lvl, f"수집 상태 {stats['status']}: {stats['note']}")
+                    alerts.notify(cfg, "WARN", f"수집 상태 {stats['status']}: {stats['note']}")
+
+            # 오류가 여러 주기 '연속' 지속될 때만 긴급 알림(진짜 고장).
+            err_th = cfg.get("error_alerts_after", 3)
+            if error_streak == err_th and stats.get("kakao_running", True):
+                alerts.notify(cfg, "CRITICAL",
+                              f"수집 오류 {err_th}주기 연속 지속: {stats['note']}")
             prev_status = stats["status"]
 
             time.sleep(cfg.get("poll_seconds", 5))
