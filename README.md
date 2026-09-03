@@ -1,4 +1,4 @@
-# kakao-auto — KakaoTalk Windows Auto Chat Collector & Archiver (카카오톡 자동 수집·백업)
+# kakao-auto — KakaoTalk Windows Auto Chat Collector & Archiver
 
 ![platform](https://img.shields.io/badge/platform-Windows-0078D6)
 ![python](https://img.shields.io/badge/python-3.9%2B-3776AB)
@@ -6,9 +6,11 @@
 ![stars](https://img.shields.io/github/stars/AidanKR/kakao-auto?style=flat)
 ![last commit](https://img.shields.io/github/last-commit/AidanKR/kakao-auto)
 
-**카카오톡 PC의 모든 대화방을 자동으로 순회해 수집하고, 방마다 CSV 한 장으로 정리하는 윈도우 전용 도구.**
+**Archive every KakaoTalk chat room on a Windows PC — automatically, every night, into one CSV per room.**
 
-Automatically cycles through **every KakaoTalk chat room on Windows**, exports the full history via the app's own `Ctrl+S`, stores it in **SQLite**, and writes **one CSV per room** for analysis. Runs unattended every night. Read-only, fully offline.
+Leave KakaoTalk open on the Chats tab and press Enter. It cycles through every room, exports the full history via the app's own `Ctrl+S`, stores it in **SQLite**, and writes **one CSV per room** plus the real photos. Schedule it once and it runs at 2 AM with nobody at the machine — no monitor required. **Read-only** (it never sends a message) and **fully offline**.
+
+한국어 안내는 [아래](#한국어) 에 있습니다.
 
 <sub>KakaoTalk scraper · KakaoTalk exporter · chat archiver · KakaoTalk backup · Windows chat automation · read-only messenger backup · 카카오톡 자동 수집 · 카카오톡 대화 백업 · 카카오톡 스크래퍼 · 카카오톡 대화 내보내기 · 카톡 백업</sub>
 
@@ -16,136 +18,160 @@ Automatically cycles through **every KakaoTalk chat room on Windows**, exports t
 
 ---
 
-# ⚠️ USE AT YOUR OWN RISK — 반드시 먼저 읽으세요
+# ⚠️ USE AT YOUR OWN RISK — read this first
 
-> ### 이 도구를 실행하는 순간, 아래 모든 책임과 위험을 **전적으로 본인이** 진다는 데 동의하는 것입니다.
-> ### 동의하지 않으면 **사용하지 마세요.** (전문: [LICENSE](LICENSE) · [NOTICE](NOTICE))
+> **Running this tool means you accept every risk below, entirely. If you don't accept them, don't use it.** Full terms: [LICENSE](LICENSE) · [NOTICE](NOTICE)
 
-**이 프로젝트는 카카오(Kakao)와 아무 관련이 없는 비공식 개인 아카이빙 도구입니다.**
+**This is an independent, unofficial personal archiving tool. It is NOT affiliated with Kakao Corp.**
 
 | | |
 |---|---|
-| 🚫 **약관 위반** | 카톡 클라이언트 자동화·스크래핑은 **카카오 이용약관 위반**입니다. **계정이 정지·삭제될 수 있습니다.** 그 위험은 온전히 본인 몫입니다. |
-| ⚖️ **개인정보 책임=본인** | 수집물엔 **타인(고객·거래처)의 개인정보**가 담깁니다. **개인정보보호법(PIPA) 등 준수 책임은 100% 사용자**에게 있습니다. |
-| 🙅 **금지 용도** | 타인 감시·무단 접근·본인이 당사자가 아닌 대화 감청·기타 불법 목적 **금지.** |
-| 📵 **무보증·무책임** | **AS-IS.** 카톡 업데이트로 언제든 깨질 수 있고, 저자는 어떤 손해·계정조치·법적 책임도 지지 않습니다. |
-
-> **ENGLISH — USE AT YOUR OWN RISK.** Independent, unofficial personal archiving tool, **NOT affiliated with Kakao**. Automating the KakaoTalk client **violates Kakao's Terms of Service** and may get your account suspended. It does not break encryption or bypass authentication — it drives the app's own export, on your own PC, in conversations you are a party to. The archive contains **other people's personal information**; **YOU are the data controller**. Own account only. Read-only. No warranty, no liability.
+| 🚫 **Terms of Service** | Automating or scraping the KakaoTalk client **violates KakaoTalk's Terms of Service**. Your account **may be restricted, suspended, or terminated**. That risk is entirely yours. |
+| ⚖️ **You are the data controller** | The archive contains **other people's personal information**. Compliance with privacy law (Korea's **PIPA** and any equivalent) is **100% your responsibility**. |
+| 🙅 **Forbidden uses** | No surveillance of others, no unauthorized access, no interception of conversations you are not a party to, nothing unlawful. |
+| 📵 **No warranty, no liability** | **AS IS.** A KakaoTalk update can break it at any time. The author is not liable for any damage, account action, or legal claim. |
+| ✅ **Not an exploit** | It breaks no encryption and bypasses no authentication. It drives the app's own export, on your own PC, in rooms you already belong to. That still does not make it compliant with Kakao's terms. |
 
 ---
 
-## 설치 (윈도우) · Install
+## Install (Windows)
 
-**파이썬도, 빌드도 필요 없습니다.**
+**No Python, no build step.**
 
-1. [**Releases**](https://github.com/AidanKR/kakao-auto/releases/latest) 에서 **`KakaoAuto-Setup.exe`** 다운로드
-2. 실행 → "Windows가 PC를 보호했습니다" 창이 뜨면 **추가 정보 → 실행** (서명 인증서가 없는 오픈소스라 정상)
-3. 시작 메뉴 → **KakaoAuto** 실행
+1. Download **`KakaoAuto-Setup.exe`** from [**Releases**](https://github.com/AidanKR/kakao-auto/releases/latest).
+2. Run it. Windows shows **"Windows protected your PC"** because the binary is unsigned → **More info → Run anyway**.
+3. Launch **KakaoAuto** from the Start menu.
 
-설치 위치는 `%LOCALAPPDATA%\KakaoAuto` 이고, `config.json`·`kakao.db`·결과물이 모두 그 옆에 저장됩니다.
+It installs to `%LOCALAPPDATA%\KakaoAuto`, and keeps `config.json`, `kakao.db`, and all output next to the executable.
 
-> The installer is built automatically on a Windows CI runner (`.github/workflows/build-windows.yml`).
+> The installer is built on a Windows CI runner — see `.github/workflows/build-windows.yml`.
 
-## 쓰는 법 — Enter 한 번
+## Use it — one keypress
 
-**전제: 카카오톡을 켜고 '채팅' 탭으로 두세요.** 그 상태가 아니면 수집이 안 됩니다.
+**Prerequisite: KakaoTalk must be running and on the Chats tab.** Nothing is collected otherwise.
 
-KakaoAuto를 실행하고 **Enter만 누르면** 아래가 한 번에 이어집니다.
+Start KakaoAuto and press **Enter**. That runs the whole pipeline:
 
 ```
-수집 → 정리(선택) → 방별 CSV → 사진 백업
+collect → consolidate (optional) → one CSV per room → photo backup
 ```
 
-숫자 메뉴는 개별 기능이 필요할 때만 쓰면 됩니다.
+The numbered menu entries are there for individual tools when you want them.
 
-## 매일 자동 (무인)
+## Run it every night, unattended
 
-메뉴 **`11`** 을 **한 번** 누르면 매일 **새벽 02:00** 에 위 '전체 실행'이 자동으로 돕니다. 관리자 권한이 필요 없고, 절전도 함께 꺼줍니다. 해제는 **`12`**.
+Press **`11`** once. A daily task is registered for **02:00** that runs the same full pipeline. No admin rights needed; it also disables sleep. Press **`12`** to remove it.
 
-- 시각 변경: `config.json` 의 `"nightly_time": "02:00"` 수정 후 메뉴 `11` 재실행
-- 전제: 그 시각에 **PC가 켜져 있고 로그인·잠금해제 상태**, **카카오톡이 켜져 있고 채팅 탭**
-- **모니터가 없어도 됩니다.** 방 순회가 키보드 방식이라 화면이 꺼진 헤드리스 상태에서도 동작합니다(실기 검증). 노트북이면 덮개를 닫아도 됩니다 — 단 덮개 동작을 "아무 것도 안 함"으로 두세요.
-- 카카오톡은 **끄지 않고 켜둔 채로** 둡니다. 굳이 끄고 싶으면 `close_kakao_after: true`.
+- Change the time: set `"nightly_time": "02:00"` in `config.json`, then press `11` again.
+- Requirements at that hour: the PC is **on, logged in, and unlocked**, and **KakaoTalk is running on the Chats tab**.
+- **No monitor required.** Room cycling is keyboard-driven, so it works headless — verified on a laptop with a dead screen and nothing plugged in. Closing the lid is fine if the lid action is set to "Do nothing".
+- KakaoTalk is **left running**. Set `close_kakao_after: true` if you would rather it be closed.
 
-## 나오는 것
+## What you get
 
-`share_dir`(기본 `C:/kakao_share`) 아래에 이렇게 쌓입니다.
+Everything lands under `share_dir` (default `C:/kakao_share`) — point it at a Google Drive folder to sync it off the machine.
 
 ```
 C:\kakao_share\
   csv\
-    [발주] 신화 X KMALL\
-      발주 신화 X KMALL.csv      ← 방마다 폴더 하나 + CSV 하나
-    CS 문의\
-      CS 문의.csv
-    _rooms_index.csv             ← 방 목록·건수·처음/마지막 시각
-  media\                        ← 실제 사진만 (이모티콘·스티커 제외)
-  kakao.db                       ← 원본 DB 사본
+    Sales Team\
+      Sales Team.csv          ← one folder per room, one CSV inside
+    Customer Support\
+      Customer Support.csv
+    _rooms_index.csv          ← room list, message counts, first/last timestamps
+  media\                     ← real photos only (emoticons and stickers excluded)
+  kakao.db                    ← copy of the SQLite database
 ```
 
-- **CSV 컬럼**: `room, date, time, datetime, sender, message`
-- **인코딩** `utf-8-sig` — 엑셀에서 한글 안 깨지고, `pandas.read_csv` 로 바로 읽힙니다
-- 매 실행 **전량 갱신**이라 항상 최신 전체가 방별로 정리됩니다
-- 사람이 읽는 **날짜별 TXT**도 원하면 `nightly_txt: true` → `share_dir/txt/<날짜>/<방>.txt`
+- **CSV columns**: `room, date, time, datetime, sender, message`
+- **Encoding** `utf-8-sig` — opens cleanly in Excel, reads straight into `pandas.read_csv`
+- Rewritten in full on every run, so the CSVs are always the complete current archive
+- Want human-readable daily transcripts too? Set `nightly_txt: true` → `share_dir/txt/<date>/<room>.txt`
 
-## 그 밖의 기능 (메뉴)
+## The rest of the toolbox
 
-| 메뉴 | 기능 |
+| Menu | What it does |
 |---|---|
-| `3` | **대시보드** — 누구에게 답을 안 했는지, 14일 활동 히트맵, 조용해진 거래처 |
-| `4` | **통합 검색** — 전 대화를 한 번에 검색 (오프라인 단일 HTML) |
-| `5` | **관계망** — 방↔사람 2D 그래프 |
-| `6` | **엑셀** — 방목록·응답대기·메시지 3시트 |
-| `7` | **금액·약속·계좌 추출** — 정규식, AI 불필요 |
-| `8` | **사진 백업** — 카톡이 만료시키기 전에 보존 (이모티콘 제외) |
-| `9` | **DB 백업** — 회전 백업 + 선택적 AES 암호화 |
-| `10` | **일일 브리핑 / 응답대기** — 규칙 기반, 키 있으면 AI 요약(로컬 Ollama 가능) |
-| `14` | **채팅 탭 위치 보정** — 카톡이 프로필 탭에서 시작할 때 대비 |
+| `3` | **Dashboard** — who is still waiting on your reply, 14-day activity heatmap, clients who went quiet |
+| `4` | **Full-text search** across every conversation at once (offline, single HTML file) |
+| `5` | **Relationship graph** — rooms ↔ people, 2D and interactive |
+| `6` | **Excel export** — rooms, pending replies, messages (3 sheets) |
+| `7` | **Extract amounts, appointments, bank accounts** — regex, no AI required |
+| `8` | **Photo backup** — save media before KakaoTalk expires it (emoticons excluded) |
+| `9` | **Database backup** — rotating, with optional AES encryption |
+| `10` | **Daily briefing / pending replies** — rule-based; optional AI summary, including local **Ollama** so nothing leaves the machine |
+| `14` | **Calibrate the Chats tab** — for when KakaoTalk starts on the profile tab |
 
 ![Full-text search across every chat](docs/search.png)
 
 ![2D relationship graph — rooms and people](docs/graph.png)
 
-## 잘 안 될 때
+## Troubleshooting
 
-| 증상 | 원인·해결 |
+| Symptom | Cause and fix |
 |---|---|
-| 프로필/친구 목록만 읽힘 | 카톡이 **친구 탭**에서 시작한 것. 메뉴 `14` 로 채팅 아이콘 위치를 한 번 보정하세요 |
-| `채팅목록을 못 찾음` | 카톡이 꺼져 있거나 로그인 전. 켜고 **채팅 탭**으로 |
-| CSV 폴더가 비어 있음 | 수집만 하면 DB에만 쌓입니다. **Enter(전체 실행)** 를 돌리면 CSV가 생깁니다 |
-| 순회가 엉킴 | 배치가 도는 몇 분간은 이 PC의 마우스·키보드를 쓰지 마세요 (GUI를 조작 중입니다) |
-| 이모티콘만 백업됨 | `skip_emoticons: true`(기본) 확인. `media_min_bytes` 로 작은 이미지 제외 |
+| It reads your friends list, not chats | KakaoTalk started on the **Friends tab**. Run menu `14` once to calibrate where the Chats icon is. |
+| `채팅목록을 못 찾음` (chat list not found) | KakaoTalk is closed or not logged in. Open it and switch to the Chats tab. |
+| The CSV folder is empty | Collecting only fills the database. Press **Enter** (full run) to produce CSVs. |
+| Cycling gets confused | Don't touch the mouse or keyboard while the batch runs — it is driving the GUI. |
+| Only emoticons got backed up | Check `skip_emoticons: true` (the default), and raise `media_min_bytes` to drop small images. |
 
-## 설정 (config.json)
+## Configuration
 
-새 버전에서 항목이 추가되면 **실행할 때 자동으로 채워집니다**(기존 값은 보존, 원본은 `config.json.bak`). 손으로 고칠 일이 거의 없습니다.
+New options are **filled into your `config.json` automatically** when a new version starts (your existing values are preserved; the original is saved as `config.json.bak`). You rarely need to edit it by hand.
 
-자주 건드리는 것만:
+The ones worth knowing:
 
 ```jsonc
 {
-  "share_dir": "C:/kakao_share",   // 결과 저장 폴더 (구글드라이브 경로도 가능)
-  "nightly_time": "02:00",         // 무인 실행 시각
-  "nightly_txt": false,            // 날짜별 TXT도 만들지
-  "nightly_media": true,           // 사진 백업 포함
-  "close_kakao_after": false,      // 끝나고 카톡 끄기
-  "backup_passphrase": ""          // 채우면 백업을 AES 암호화
+  "share_dir": "C:/kakao_share",   // where output goes (a Google Drive path works)
+  "nightly_time": "02:00",         // unattended run time, local to this PC
+  "nightly_txt": false,            // also write daily TXT transcripts
+  "nightly_media": true,           // include photo backup
+  "close_kakao_after": false,      // close KakaoTalk when the batch finishes
+  "backup_passphrase": ""          // set it to AES-encrypt database backups
 }
 ```
 
-## 소스에서 쓰기 (개발자용)
+## Running from source
 
-설치파일 대신 소스로 돌리려면 윈도우에서 `1_install.bat`(의존성) → `config.example.json` 을 `config.json` 으로 복사 → `python kakao.py`. 직접 exe를 만들려면 `build_exe.bat`.
+On Windows: `1_install.bat` (dependencies) → copy `config.example.json` to `config.json` → `python kakao.py`. To build the executable yourself, run `build_exe.bat`.
 
-## 요구사항
+## Requirements
 
-- **Windows** (카카오톡 PC 클라이언트를 조작하므로 윈도우 전용)
-- 카카오톡 로그인 + **채팅 탭**
-- 수집 전용 PC 권장 — 순회 중에는 사람이 그 PC를 쓰기 어렵습니다
+- **Windows** — it drives the KakaoTalk desktop client, so there is no macOS or Linux build
+- KakaoTalk logged in, on the **Chats tab**
+- A dedicated machine is recommended; the PC is hard to use while a cycle is running
 
-## 어떻게 읽어내나 (기술 메모)
+## How it reads messages (technical note)
 
-이 버전 카카오톡은 대화 목록과 메시지를 **직접 그려서**(owner-drawn) UI Automation으로는 글자가 전혀 잡히지 않습니다. 그래서 텍스트를 긁는 대신 **앱 자체의 `Ctrl+S` 대화 내보내기**를 자동화하고, 저장 대화상자는 UIA가 멈추는 구간이라 win32로 따로 처리합니다. 친구 목록과 채팅 목록은 컨트롤 클래스가 같아서 **컨트롤 이름(`ChatRoomListCtrl`)** 으로 구분합니다.
+This build of KakaoTalk draws its chat list and messages itself (owner-drawn), so UI Automation returns **no text at all** — you cannot scrape it the usual way. Instead this tool automates the application's own **`Ctrl+S` chat export** and parses the result. The save dialog is a modal that freezes UIA, so that step is handled through win32 instead. The friends list and the chat list use the *same* control class, so they are told apart by control name (`ChatRoomListCtrl`) — otherwise the collector happily archives your contact list.
+
+---
+
+<a name="한국어"></a>
+
+## 한국어
+
+**카카오톡 PC의 모든 대화방을 자동으로 순회해 수집하고, 방마다 CSV 한 장으로 정리하는 윈도우 전용 도구.**
+
+### 설치
+[Releases](https://github.com/AidanKR/kakao-auto/releases/latest) 에서 **`KakaoAuto-Setup.exe`** 를 받아 실행하세요. 파이썬도 빌드도 필요 없습니다. "Windows가 PC를 보호했습니다" 창이 뜨면 **추가 정보 → 실행** (서명 인증서가 없는 오픈소스라 정상입니다).
+
+### 쓰는 법
+**카카오톡을 켜고 '채팅' 탭으로 두세요.** 그 상태에서 KakaoAuto를 실행하고 **Enter만 누르면** 수집 → 정리 → 방별 CSV → 사진 백업이 한 번에 이어집니다.
+
+### 매일 자동
+메뉴 **`11`** 을 한 번 누르면 매일 **새벽 02:00** 에 같은 작업이 자동으로 돕니다(해제는 `12`). 그 시각에 PC가 켜져 있고 로그인 상태이며 카카오톡이 채팅 탭이면 됩니다. **모니터는 없어도 됩니다** — 방 순회가 키보드 방식이라 화면이 꺼진 상태에서도 동작합니다(실기 검증). 노트북 덮개를 닫아도 되지만, 덮개 동작을 "아무 것도 안 함"으로 두세요.
+
+### 나오는 것
+`share_dir`(기본 `C:/kakao_share`) 아래에 **방마다 폴더 하나 + CSV 하나**(`csv/<방>/<방>.csv`), 방 목록(`_rooms_index.csv`), 실제 사진만 담긴 `media/`, DB 사본이 쌓입니다. CSV 컬럼은 `room, date, time, datetime, sender, message` 이고 `utf-8-sig` 라 엑셀에서 한글이 안 깨지고 `pandas` 로 바로 읽힙니다.
+
+### 그 밖에
+대시보드(누구에게 답을 안 했는지), 통합 검색, 관계망, 엑셀, 금액·약속 추출, 사진 백업, 암호화 백업, 일일 브리핑(로컬 Ollama 가능)이 메뉴에 있습니다. 잘 안 될 때는 위 [Troubleshooting](#troubleshooting) 표를 보세요. 특히 **프로필/친구 목록만 읽히면 메뉴 `14`** 로 채팅 탭 위치를 한 번 보정하면 됩니다.
+
+### 주의
+카카오톡 클라이언트 자동화는 **카카오 이용약관 위반**이며 계정이 정지·삭제될 수 있습니다. 수집물에는 타인의 개인정보가 담기므로 **개인정보보호법(PIPA) 준수 책임은 사용자 본인**에게 있습니다. 본인 소유 계정, 본인이 참여한 대화, 적법한 목적에만 사용하세요.
 
 ## License
 
