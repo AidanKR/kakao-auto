@@ -25,6 +25,9 @@
   "chat_tab_hotkey": "{Ctrl}(2)",
   "_chat_tab_hotkey": "카톡 채팅 탭 전환 단축키(가장 확실). 기본 Ctrl+2. 카톡 버전이 다르면 바꾸거나 \"\"로 끄기.",
 
+  "chat_tab_focus_click": true,
+  "_chat_tab_focus_click": "단축키 전에 카톡 제목표시줄을 클릭해 창을 포커스(단축키가 먹게). 문제 시 false.",
+
   "chat_tab_offset": [24, 132],
   "_chat_tab_offset": "단축키·UIA 다 실패 시 '채팅' 탭 클릭 좌표(창 좌상단 기준 [x,y]px). 안 맞으면 조절.",
 

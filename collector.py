@@ -150,27 +150,43 @@ def _chat_list_ready(main):
     return find_class(main, "EVA_VH_ListControl_Dblclk") is not None
 
 
-def activate_chat_tab(main, cfg=None):
-    """카톡이 친구/프로필 탭에서 시작하면 '채팅' 탭으로 전환(채팅목록이 나타나게).
-    이미 채팅목록이 보이면 아무것도 안 함. 성공 여부 반환."""
-    if _chat_list_ready(main):
-        return True
+def _focus_window(main, cfg=None):
+    """단축키가 먹으려면 창이 포그라운드로 포커스돼야 한다. SetActive + 제목표시줄 클릭."""
     try:
         main.SetActive()
         time.sleep(0.2)
     except Exception:
         pass
-    # 0) 단축키 — 카톡 PC: Ctrl+2 = 채팅 탭(가장 확실). config chat_tab_hotkey 로 조절.
-    hotkey = (cfg or {}).get("chat_tab_hotkey", "{Ctrl}(2)")
-    if hotkey:
+    if (cfg or {}).get("chat_tab_focus_click", True):
         try:
-            auto.SendKeys(hotkey)
-            time.sleep(0.6)
-            if _chat_list_ready(main):
-                print("  채팅 탭으로 전환함(단축키 Ctrl+2).")
-                return True
+            r = main.BoundingRectangle
+            # 제목표시줄 중앙(빈 드래그 영역) 클릭 → 부작용 없이 포커스만.
+            auto.Click(int((r.left + r.right) / 2), r.top + 8, simulateMove=False)
+            time.sleep(0.2)
         except Exception:
             pass
+
+
+def activate_chat_tab(main, cfg=None):
+    """카톡이 친구/프로필 탭에서 시작하면 '채팅' 탭으로 전환(채팅목록이 나타나게).
+    이미 채팅목록이 보이면 아무것도 안 함. 성공 여부 반환."""
+    if _chat_list_ready(main):
+        return True
+    # 0) 단축키 — 카톡 PC: Ctrl+2 = 채팅 탭(가장 확실). 창을 먼저 포커스해야 먹는다.
+    hotkey = (cfg or {}).get("chat_tab_hotkey", "{Ctrl}(2)")
+    if hotkey:
+        for _ in range(3):
+            _focus_window(main, cfg)
+            try:
+                auto.SendKeys(hotkey, waitTime=0.05)
+            except Exception:
+                pass
+            time.sleep(0.7)
+            if _chat_list_ready(main):
+                print("  채팅 탭으로 전환함(단축키, 창 포커스 후).")
+                return True
+    else:
+        _focus_window(main, cfg)
     # 1) UIA 이름에 '채팅' 들어간 요소를 모두 찾아 하나씩 눌러본다(탭 버튼 우선).
     cands = find_all_by_name_contains(main, "채팅")
     # 이름이 정확히 '채팅' 인 것(탭 버튼일 확률↑)을 앞으로
