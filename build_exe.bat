@@ -13,11 +13,16 @@ echo [1/2] 빌드 도구·라이브러리 설치...
 
 echo.
 echo [2/2] KakaoAuto.exe 빌드 (몇 분 걸립니다)...
+REM kakao.py 는 형제 모듈을 문자열로 동적 로드(importlib)해서 PyInstaller 가
+REM 못 잡습니다. 프로젝트의 모든 .py(진입점 kakao 제외)를 hidden-import 로 포함.
+set HID=
+for %%f in (*.py) do if /I not "%%~nf"=="kakao" call set HID=%%HID%% --hidden-import %%~nf
 %PY% -m PyInstaller --onefile --name KakaoAuto ^
   --collect-submodules uiautomation ^
   --collect-submodules comtypes ^
   --hidden-import win32gui --hidden-import win32con --hidden-import win32api --hidden-import win32process ^
   --hidden-import openpyxl --hidden-import cryptography ^
+  %HID% ^
   kakao.py
 
 echo.

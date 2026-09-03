@@ -30,15 +30,24 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build KakaoAuto.exe (PyInstaller)
-        shell: cmd
-        run: >
-          pyinstaller --onefile --name KakaoAuto
-          --collect-submodules uiautomation
-          --collect-submodules comtypes
-          --hidden-import win32gui --hidden-import win32con
-          --hidden-import win32api --hidden-import win32process
-          --hidden-import openpyxl --hidden-import cryptography
-          kakao.py
+        shell: pwsh
+        run: |
+          # kakao.py loads sibling modules dynamically (importlib), which
+          # PyInstaller's static analysis can't see. Add every project .py
+          # (except the entry point) as an explicit hidden-import so they are
+          # bundled into the onefile exe.
+          $mods = Get-ChildItem -Filter *.py |
+            Where-Object { $_.BaseName -ne 'kakao' } |
+            ForEach-Object { '--hidden-import'; $_.BaseName }
+          Write-Host "Bundling project modules:" ($mods -join ' ')
+          pyinstaller --onefile --name KakaoAuto `
+            --collect-submodules uiautomation `
+            --collect-submodules comtypes `
+            --hidden-import win32gui --hidden-import win32con `
+            --hidden-import win32api --hidden-import win32process `
+            --hidden-import openpyxl --hidden-import cryptography `
+            @mods `
+            kakao.py
 
       - name: Resolve version
         id: ver
