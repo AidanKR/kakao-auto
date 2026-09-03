@@ -3,6 +3,12 @@
 All notable changes to **kakao-auto** are documented here.
 Downloads: [Releases](https://github.com/AidanKR/kakao-auto/releases) · one-click Windows installer (`KakaoAuto-Setup.exe`).
 
+## v1.1.0 (최종형)
+- **[Enter] 한 번 = 전체 실행** — 메뉴에서 그냥 Enter 만 누르면 **수집 → 정리(TXT) → 방별 CSV → 사진 백업**이 한 번에 이어집니다. 숫자를 여러 번 누를 필요 없음(개별 실행은 그대로 1~14).
+- **운영 방식 = 카톡 켜둔 채로** — `close_kakao_after` 기본값을 `false`로. 카카오톡을 **'채팅' 탭에 켜두면** 배치가 실행·종료를 건드리지 않고 바로 수집합니다(가장 안정적).
+- 메뉴 상단에 전제 안내 고정: "카카오톡을 켜고 '채팅' 탭으로 두세요".
+- 무인 자동(메뉴 11)도 매일 02:00 에 같은 '전체 실행'을 수행.
+
 ## v1.0.8
 - **채팅 탭 자동 전환(Ctrl+2)** — 카톡이 프로필/친구 탭에서 시작해도 수집 전에 `Ctrl+2`로 채팅 탭으로 전환(가장 확실). UIA·좌표 폴백 포함, `chat_tab_hotkey`로 조절.
 

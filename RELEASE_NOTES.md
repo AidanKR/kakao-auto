@@ -1,22 +1,21 @@
-## KakaoTalk business chat — now fully hands-off on Windows
+## 설치 한 번, 그 다음은 Enter 한 번 (또는 매일 새벽 자동)
 
-**Install once, and every night it runs itself.** Download `KakaoAuto-Setup.exe` below → run → done. No Python, no build.
+**KakaoAuto-Setup.exe** 를 받아 실행하면 끝입니다. 파이썬도, 빌드도 필요 없습니다.
 
-### What you get
-- **원클릭 설치** — `KakaoAuto-Setup.exe` 하나. 파이썬·빌드 필요 없음.
-- **매일 새벽 02:00 무인 배치** (메뉴 `11`) — 카톡 자동 실행 → 전체 수집 → 정리 → **방별 CSV** → 실제 사진 백업 → **카톡 자동 종료**. 사람 개입 0.
-- **방별 CSV** — `share_dir/csv/<방>/<방>.csv` (방마다 폴더 + CSV 하나). `utf-8-sig`, 엑셀·pandas 그대로 → 메인 서버로 옮겨 분석.
-- **실제 사진만** — 이모티콘·스티커·썸네일은 빼고 진짜 이미지만 백업.
-- **읽기 전용** — 메시지 전송 없음. 100% 로컬·오프라인.
+### 쓰는 법
+1. 카카오톡을 켜고 **'채팅' 탭**으로 둡니다.
+2. KakaoAuto 실행 → **Enter 한 번** → 수집 → 정리 → **방별 CSV** → 사진 백업까지 자동으로 이어집니다.
+3. 매일 자동으로 돌리려면 메뉴 **`11`** 한 번 → 새벽 02:00 에 같은 작업을 알아서 수행합니다.
 
-### One-liner (EN)
-An unattended KakaoTalk-desktop archiver for Windows: a scheduled 02:00 batch opens KakaoTalk, exports every room, writes one CSV per room (+ real photos, emoticons excluded), and closes KakaoTalk — all offline, read-only.
+### 나오는 것
+- `share_dir/<날짜>/<방>.txt` — 날짜·방별 대화 정리본
+- `share_dir/csv/<방>/<방>.csv` — **방마다 폴더 하나 + CSV 하나** (utf-8-sig, 엑셀·pandas 그대로 → 서버 분석용)
+- `share_dir/media/` — 실제 사진만 (이모티콘·스티커·썸네일 제외)
+- 그 밖에 대시보드, 통합 검색, 관계망, 엑셀, 금액·약속 추출, 암호화 백업
 
-### 설치
-1. 아래 **`KakaoAuto-Setup.exe`** 다운로드 → 실행 ("Windows가 PC를 보호했습니다" → 추가 정보 → 실행).
-2. 시작 메뉴 → **KakaoAuto** → `config.json`의 `share_dir` 지정 → 메뉴 `11` 한 번(무인 자동 등록).
-3. 전제: 그 시각 PC 켜짐·로그인, 카톡 자동 로그인.
+### 성격
+**읽기 전용입니다.** 메시지를 보내지 않고, 데이터는 전부 이 PC 안에 있습니다(AI 사용은 선택, 로컬 Ollama 가능).
 
-> ⚠️ 카톡 클라이언트 자동화는 카카오 이용약관 위반이며 계정 제재 위험이 있습니다. 본인 소유 업무 계정·본인이 참여한 대화·적법한 목적에만. 수집물의 개인정보 처리 책임은 사용자에게 있습니다.
+> 카카오톡 클라이언트 자동화는 카카오 이용약관에 어긋나며 계정 제재 위험이 있습니다. 본인 소유 계정, 본인이 참여한 대화, 적법한 목적에만 사용하세요. 수집물의 개인정보 처리 책임은 사용자에게 있습니다.
 
 전체 변경 이력: [CHANGELOG.md](https://github.com/AidanKR/kakao-auto/blob/main/CHANGELOG.md)

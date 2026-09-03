@@ -55,8 +55,8 @@
   "kakao_boot_wait": 40,
   "_kakao_boot_wait": "야간배치에서 카톡 실행 후 자동로그인/로딩 대기 초. 느린 PC면 늘리기(60~90).",
 
-  "close_kakao_after": true,
-  "_close_kakao_after": "야간배치가 끝나면 카톡도 종료할지(taskkill). false면 켜둠.",
+  "close_kakao_after": false,
+  "_close_kakao_after": "야간배치가 끝나면 카톡도 종료할지(taskkill). 기본 false=켜둔 채로 유지(권장: 카톡을 채팅 탭에 켜두고 운영).",
 
   "nightly_media": true,
   "_nightly_media": "야간배치에 사진 백업 포함할지(이모티콘 제외). false면 CSV까지만.",

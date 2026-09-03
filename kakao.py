@@ -23,7 +23,12 @@ APP = appdir.APP_DIR
 
 MENU = """
 ================= KakaoAuto =================
-  1) 수집 시작 (실시간 · Ctrl+C 로 멈춤)
+  ※ 카카오톡을 켜고 '채팅' 탭으로 두세요 (그래야 수집됩니다)
+
+  [Enter] 지금 전체 실행  ← 수집 → 정리 → 방별 CSV → 사진 (이것만 누르면 됨)
+
+  --- 개별 실행 (필요할 때만) ---
+  1) 수집만 (실시간 · Ctrl+C 로 멈춤)
   2) 정리 (날짜·방별 TXT)
   3) 대시보드 열기
   4) 통합 검색 열기
@@ -33,7 +38,7 @@ MENU = """
   8) 사진·파일 백업
   9) DB 백업
  10) 일일 브리핑 / 응답대기
- 11) 무인 자동 설정 (매일 새벽 02:00 → 전체 수집 → 정리 → 종료)
+ 11) 무인 자동 설정 (매일 새벽 02:00 에 위 '전체 실행' 자동)
  12) 무인 자동 해제
  13) 방별 CSV 내보내기 (방 하나당 CSV 하나 · 서버 분석용)
  14) 채팅 탭 위치 보정 (마우스를 채팅 아이콘에 올려두면 자동 저장)
@@ -185,6 +190,7 @@ def _nightly():
     cfg = _load_cfg()
     win = sys.platform.startswith("win")
     print("=== KakaoAuto 야간 배치 시작 ===")
+    print("  (전제: 카카오톡이 켜져 있고 '채팅' 탭)")
     if win:
         print("- 카톡 실행/확인...")
         _start_kakao(cfg)
@@ -197,7 +203,7 @@ def _nightly():
     if cfg.get("nightly_media", True):
         print("- 사진 백업(이모티콘/스티커 제외)...")
         _run("media_backup")
-    if win and cfg.get("close_kakao_after", True):
+    if win and cfg.get("close_kakao_after", False):
         print("- 카톡 종료...")
         _stop_kakao()
     print("=== 완료. 종료합니다. ===")
@@ -320,12 +326,16 @@ def main():
             break
         if ch in ("0", "q", "Q"):
             break
+        if ch == "":                      # Enter 만 누르면 전체 실행
+            _nightly()
+            print()
+            continue
         act = actions.get(ch)
         if act:
             act()
             print()
         else:
-            print("  잘못된 선택입니다.")
+            print("  잘못된 선택입니다. (전체 실행은 그냥 Enter)")
     print("종료합니다.")
 
 
