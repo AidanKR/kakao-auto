@@ -22,14 +22,17 @@
   "row_height": 62,
   "_row_height": "cycle: 채팅목록 한 줄 높이(px). 방을 건너뛰면 줄이고(55), 같은 방 반복이면 늘리세요(68).",
 
-  "chat_tab_hotkey": "{Ctrl}(2)",
-  "_chat_tab_hotkey": "카톡 채팅 탭 전환 단축키(가장 확실). 기본 Ctrl+2. 카톡 버전이 다르면 바꾸거나 \"\"로 끄기.",
+  "chat_list_marker": "ChatRoom",
+  "_chat_list_marker": "채팅목록 컨트롤 이름 표식. 친구목록(ContactListCtrl)과 채팅목록(ChatRoomListCtrl)은 클래스가 같아 이름으로 구분(실측). 바꿀 일 거의 없음.",
 
   "chat_tab_focus_click": true,
-  "_chat_tab_focus_click": "단축키 전에 카톡 제목표시줄을 클릭해 창을 포커스(단축키가 먹게). 문제 시 false.",
+  "_chat_tab_focus_click": "탭 클릭 전 카톡 제목표시줄을 클릭해 창을 포커스. 문제 시 false.",
 
-  "chat_tab_offset": [24, 132],
-  "_chat_tab_offset": "단축키·UIA 다 실패 시 '채팅' 탭 클릭 좌표(창 좌상단 기준 [x,y]px). 안 맞으면 조절.",
+  "chat_tab_nav_x": 33,
+  "_chat_tab_nav_x": "왼쪽 탭 내비(폭 66px) 가운데 x. 카톡이 직접 그려 UIA에 안 잡혀 좌표로 클릭.",
+
+  "chat_tab_scan_y": [103, 96, 110, 88, 120, 55, 151, 72, 135, 170],
+  "_chat_tab_scan_y": "채팅 탭 아이콘 후보 y(창 상단 기준 px). 순서대로 클릭하며 채팅목록이 뜨면 멈춤. 전환 실패 시 실제 채팅 아이콘 y를 맨 앞에 넣기.",
 
   "list_top_pad": 6,
   "_list_top_pad": "cycle: 목록 맨 위 여백(px). 첫 방을 놓치면 조절.",

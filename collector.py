@@ -146,8 +146,29 @@ def find_all_by_name_contains(ctrl, needle, depth=0, out=None):
     return out
 
 
-def _chat_list_ready(main):
-    return find_class(main, "EVA_VH_ListControl_Dblclk") is not None
+def find_chat_list(ctrl, marker="ChatRoom", depth=0):
+    """채팅방 목록 컨트롤만 반환. 친구목록(ContactListCtrl)과 채팅목록(ChatRoomListCtrl)은
+    클래스(EVA_VH_ListControl_Dblclk)가 같아서 **이름**으로 구분해야 한다(실측 2026-09-03)."""
+    if depth > 18:
+        return None
+    try:
+        for c in ctrl.GetChildren():
+            try:
+                if (c.ClassName or "") == "EVA_VH_ListControl_Dblclk" and marker in (c.Name or ""):
+                    return c
+            except Exception:
+                pass
+            r = find_chat_list(c, marker, depth + 1)
+            if r:
+                return r
+    except Exception:
+        pass
+    return None
+
+
+def _chat_list_ready(main, cfg=None):
+    marker = (cfg or {}).get("chat_list_marker", "ChatRoom")
+    return find_chat_list(main, marker) is not None
 
 
 def _focus_window(main, cfg=None):
@@ -168,52 +189,32 @@ def _focus_window(main, cfg=None):
 
 
 def activate_chat_tab(main, cfg=None):
-    """카톡이 친구/프로필 탭에서 시작하면 '채팅' 탭으로 전환(채팅목록이 나타나게).
+    """카톡이 친구/프로필 탭에서 시작하면 '채팅' 탭으로 전환(ChatRoomListCtrl 이 나타나게).
+
+    실측(2026-09-03): 왼쪽 탭 내비(x 0~66)는 카톡이 직접 그려서 UIA에 안 잡히고,
+    Ctrl+2 같은 단축키도 이 버전엔 없음 → **좌표 클릭**이 유일. 채팅 아이콘의 정확한 y를
+    모르므로 후보 y를 위에서부터 스캔하며 채팅목록(ChatRoomListCtrl)이 뜰 때까지 클릭.
     이미 채팅목록이 보이면 아무것도 안 함. 성공 여부 반환."""
-    if _chat_list_ready(main):
+    cfg = cfg or {}
+    if _chat_list_ready(main, cfg):
         return True
-    # 0) 단축키 — 카톡 PC: Ctrl+2 = 채팅 탭(가장 확실). 창을 먼저 포커스해야 먹는다.
-    hotkey = (cfg or {}).get("chat_tab_hotkey", "{Ctrl}(2)")
-    if hotkey:
-        for _ in range(3):
-            _focus_window(main, cfg)
-            try:
-                auto.SendKeys(hotkey, waitTime=0.05)
-            except Exception:
-                pass
-            time.sleep(0.7)
-            if _chat_list_ready(main):
-                print("  채팅 탭으로 전환함(단축키, 창 포커스 후).")
-                return True
-    else:
-        _focus_window(main, cfg)
-    # 1) UIA 이름에 '채팅' 들어간 요소를 모두 찾아 하나씩 눌러본다(탭 버튼 우선).
-    cands = find_all_by_name_contains(main, "채팅")
-    # 이름이 정확히 '채팅' 인 것(탭 버튼일 확률↑)을 앞으로
-    cands.sort(key=lambda c: 0 if (c.Name or "").strip() == "채팅" else 1)
-    for c in cands:
+    _focus_window(main, cfg)
+    try:
+        r = main.BoundingRectangle
+    except Exception:
+        return False
+    nav_x = r.left + int(cfg.get("chat_tab_nav_x", 33))          # 내비 폭 66 의 가운데
+    ys = cfg.get("chat_tab_scan_y") or [103, 96, 110, 88, 120, 55, 151, 72, 135, 170]
+    for y in ys:
         try:
-            try:
-                c.GetInvokePattern().Invoke()
-            except Exception:
-                c.Click(simulateMove=False)
-            time.sleep(0.6)
-            if _chat_list_ready(main):
-                print(f"  채팅 탭으로 전환함(UIA: '{(c.Name or '')[:20]}').")
+            auto.Click(nav_x, r.top + int(y), simulateMove=False)
+            time.sleep(0.7)
+            if _chat_list_ready(main, cfg):
+                print(f"  채팅 탭으로 전환함(내비 클릭 x={nav_x - r.left}, y={y}).")
                 return True
         except Exception:
             continue
-    # 2) 좌표 폴백: 왼쪽 내비의 '채팅' 아이콘(창 좌상단 기준 오프셋, config chat_tab_offset).
-    try:
-        off = (cfg or {}).get("chat_tab_offset", [24, 132])
-        r = main.BoundingRectangle
-        auto.Click(r.left + int(off[0]), r.top + int(off[1]), simulateMove=False)
-        time.sleep(0.6)
-        if _chat_list_ready(main):
-            print("  채팅 탭으로 전환함(좌표 폴백).")
-            return True
-    except Exception:
-        pass
+    print("  채팅 탭 전환 실패 — 카톡 창을 크게 두고, config 의 chat_tab_scan_y 에 채팅 아이콘 y를 넣어주세요.")
     return False
 
 
@@ -581,9 +582,9 @@ def run_cycle_keys(cfg, conn, iso, today):
         return {"kakao_running": False, "rooms_opened": 0, "new_messages": 0,
                 "export_failures": 0, "note": "카톡 메인창 없음"}
     activate_chat_tab(main, cfg)          # 프로필/친구 탭에서 시작해도 채팅 탭으로
-    chat = find_class(main, "EVA_VH_ListControl_Dblclk")
+    chat = find_chat_list(main, cfg.get("chat_list_marker", "ChatRoom"))   # 친구목록 제외, 채팅목록만
     if chat is None:
-        print("  채팅목록을 못 찾음(채팅 탭 전환 실패 — config chat_tab_offset 조절)")
+        print("  채팅목록(ChatRoomListCtrl)을 못 찾음 — 채팅 탭 전환 실패. config chat_tab_scan_y 조절")
         return {"kakao_running": True, "rooms_opened": 0, "new_messages": 0,
                 "export_failures": 0, "note": "채팅목록 못찾음(채팅탭 전환 실패 의심)"}
     dwell = cfg.get("dwell_ms", 700) / 1000.0
@@ -681,9 +682,9 @@ def run_cycle_pixel(cfg, conn, iso, today):
     time.sleep(dwell)
 
     activate_chat_tab(main, cfg)          # 프로필/친구 탭에서 시작해도 채팅 탭으로
-    chat = find_class(main, "EVA_VH_ListControl_Dblclk")
+    chat = find_chat_list(main, cfg.get("chat_list_marker", "ChatRoom"))   # 친구목록 제외, 채팅목록만
     if chat is None:
-        print("  채팅목록을 못 찾음(채팅 탭 전환 실패)")
+        print("  채팅목록(ChatRoomListCtrl)을 못 찾음 — 채팅 탭 전환 실패")
         return
     try:
         r = chat.BoundingRectangle
