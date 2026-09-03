@@ -131,6 +131,65 @@ def get_main_window():
     return None
 
 
+def find_all_by_name_contains(ctrl, needle, depth=0, out=None):
+    if out is None:
+        out = []
+    if depth > 16:
+        return out
+    try:
+        for c in ctrl.GetChildren():
+            if needle in (c.Name or ""):
+                out.append(c)
+            find_all_by_name_contains(c, needle, depth + 1, out)
+    except Exception:
+        pass
+    return out
+
+
+def _chat_list_ready(main):
+    return find_class(main, "EVA_VH_ListControl_Dblclk") is not None
+
+
+def activate_chat_tab(main, cfg=None):
+    """카톡이 친구/프로필 탭에서 시작하면 '채팅' 탭으로 전환(채팅목록이 나타나게).
+    이미 채팅목록이 보이면 아무것도 안 함. 성공 여부 반환."""
+    if _chat_list_ready(main):
+        return True
+    try:
+        main.SetActive()
+        time.sleep(0.2)
+    except Exception:
+        pass
+    # 1) UIA 이름에 '채팅' 들어간 요소를 모두 찾아 하나씩 눌러본다(탭 버튼 우선).
+    cands = find_all_by_name_contains(main, "채팅")
+    # 이름이 정확히 '채팅' 인 것(탭 버튼일 확률↑)을 앞으로
+    cands.sort(key=lambda c: 0 if (c.Name or "").strip() == "채팅" else 1)
+    for c in cands:
+        try:
+            try:
+                c.GetInvokePattern().Invoke()
+            except Exception:
+                c.Click(simulateMove=False)
+            time.sleep(0.6)
+            if _chat_list_ready(main):
+                print(f"  채팅 탭으로 전환함(UIA: '{(c.Name or '')[:20]}').")
+                return True
+        except Exception:
+            continue
+    # 2) 좌표 폴백: 왼쪽 내비의 '채팅' 아이콘(창 좌상단 기준 오프셋, config chat_tab_offset).
+    try:
+        off = (cfg or {}).get("chat_tab_offset", [24, 132])
+        r = main.BoundingRectangle
+        auto.Click(r.left + int(off[0]), r.top + int(off[1]), simulateMove=False)
+        time.sleep(0.6)
+        if _chat_list_ready(main):
+            print("  채팅 탭으로 전환함(좌표 폴백).")
+            return True
+    except Exception:
+        pass
+    return False
+
+
 def chat_windows_by_handle():
     hs = {}
     for w in auto.GetRootControl().GetChildren():
@@ -494,11 +553,12 @@ def run_cycle_keys(cfg, conn, iso, today):
         print("  카카오톡 메인 창을 못 찾음(실행/로그인 확인)")
         return {"kakao_running": False, "rooms_opened": 0, "new_messages": 0,
                 "export_failures": 0, "note": "카톡 메인창 없음"}
+    activate_chat_tab(main, cfg)          # 프로필/친구 탭에서 시작해도 채팅 탭으로
     chat = find_class(main, "EVA_VH_ListControl_Dblclk")
     if chat is None:
-        print("  채팅목록을 못 찾음")
+        print("  채팅목록을 못 찾음(채팅 탭 전환 실패 — config chat_tab_offset 조절)")
         return {"kakao_running": True, "rooms_opened": 0, "new_messages": 0,
-                "export_failures": 0, "note": "채팅목록 못찾음(카톡 UI 변경 의심)"}
+                "export_failures": 0, "note": "채팅목록 못찾음(채팅탭 전환 실패 의심)"}
     dwell = cfg.get("dwell_ms", 700) / 1000.0
     max_rooms = cfg.get("max_rooms", 600)
     read_method = cfg.get("read_method", "export")   # export=Ctrl+S(권장) / clipboard
@@ -593,9 +653,10 @@ def run_cycle_pixel(cfg, conn, iso, today):
     dwell = cfg.get("dwell_ms", 700) / 1000.0
     time.sleep(dwell)
 
+    activate_chat_tab(main, cfg)          # 프로필/친구 탭에서 시작해도 채팅 탭으로
     chat = find_class(main, "EVA_VH_ListControl_Dblclk")
     if chat is None:
-        print("  채팅목록을 못 찾음")
+        print("  채팅목록을 못 찾음(채팅 탭 전환 실패)")
         return
     try:
         r = chat.BoundingRectangle
