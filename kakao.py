@@ -35,6 +35,7 @@ MENU = """
  10) 일일 브리핑 / 응답대기
  11) 무인 자동 설정 (매일 새벽 02:00 → 전체 수집 → 정리 → 종료)
  12) 무인 자동 해제
+ 13) 방별 CSV 내보내기 (방 하나당 CSV 하나 · 서버 분석용)
   0) 종료
 ============================================"""
 
@@ -112,12 +113,14 @@ def _nightly_time():
 
 
 def _nightly():
-    """[야간 배치] 전체 1회 수집 → 정리 → 종료. 예약작업이 이걸 호출."""
+    """[야간 배치] 전체 1회 수집 → 정리(TXT) → 방별 CSV → 종료. 예약작업이 이걸 호출."""
     print("=== KakaoAuto 야간 배치 시작 ===")
-    print("[1/2] 전체 대화 1회 수집...")
+    print("[1/3] 전체 대화 1회 수집...")
     _run("collector", ["once"])
-    print("[2/2] 정리(날짜·방별 TXT)...")
+    print("[2/3] 정리(날짜·방별 TXT)...")
     _run("consolidate")
+    print("[3/3] 방별 CSV 내보내기(share_dir/csv)...")
+    _run("export_rooms_csv")
     print("=== 완료. 종료합니다. ===")
 
 
@@ -189,6 +192,8 @@ def _run_cli(cmd):
     cmd = cmd.lower()
     if cmd in ("nightly", "batch", "야간"):
         _nightly()
+    elif cmd in ("csv", "rooms-csv"):
+        _run("export_rooms_csv")
     elif cmd in ("collect", "collector"):
         _run("collector")
     elif cmd in ("consolidate", "정리"):
@@ -223,6 +228,7 @@ def main():
         "10": lambda: _run("briefing"),
         "11": setup_autostart,
         "12": remove_autostart,
+        "13": lambda: _run("export_rooms_csv"),
     }
     while True:
         print(MENU)

@@ -71,7 +71,9 @@ Prefer a single app? Run `build_exe.bat` once → `dist/KakaoAuto.exe`: one menu
 
 한국어: 파이썬 설치 없이 됩니다. **Releases**에서 `KakaoAuto-Setup.exe`를 받아 실행하세요. "Windows가 PC를 보호했습니다" 창이 뜨면 **추가 정보 → 실행**을 누르면 됩니다(서명 인증서가 없는 오픈소스라 정상입니다). 설치 후 시작 메뉴에서 **KakaoAuto** 실행 → *Edit config.json* 으로 `share_dir` 만 지정하면 끝입니다.
 
-**무인 자동 — 매일 새벽 배치(exe):** KakaoAuto 메뉴에서 **`11` (무인 자동 설정)** 을 한 번 누르면, 매일 **02:00**(이 PC 로컬시간)에 **전체 수집 → 정리 → 자동 종료**하는 예약작업이 등록됩니다(관리자 권한 불필요, 절전도 끔). 시각은 `config.json` 의 `"nightly_time": "02:00"` 로 변경. 그 시각에 PC가 켜져 있고 로그인·잠금해제 상태여야 하며, 카톡은 "PC 켤 때 자동 실행 + 자동 로그인"을 켜두세요. 해제는 **`12`**. (명령줄로도: `KakaoAuto.exe nightly` / `collect` / `consolidate` / `autostart` / `autostart-off`)
+**무인 자동 — 매일 새벽 배치(exe):** KakaoAuto 메뉴에서 **`11` (무인 자동 설정)** 을 한 번 누르면, 매일 **02:00**(이 PC 로컬시간)에 **전체 수집 → 정리 → 방별 CSV → 자동 종료**하는 예약작업이 등록됩니다(관리자 권한 불필요, 절전도 끔). 시각은 `config.json` 의 `"nightly_time": "02:00"` 로 변경. 그 시각에 PC가 켜져 있고 로그인·잠금해제 상태여야 하며, 카톡은 "PC 켤 때 자동 실행 + 자동 로그인"을 켜두세요. 해제는 **`12`**. (명령줄로도: `KakaoAuto.exe nightly` / `collect` / `consolidate` / `csv` / `autostart` / `autostart-off`)
+
+**방별 CSV(서버 분석용):** 메뉴 **`13`** (또는 야간 배치에 포함) — DB를 **방 하나당 CSV 하나**로 `share_dir/csv/` 에 내보냅니다(`<방이름>.csv` + 방 목록 `_rooms_index.csv`). 컬럼 `room,date,time,datetime,sender,message`, `utf-8-sig`(엑셀·pandas 그대로). 메인 서버로 옮겨 분석하기 좋게 매 실행 전량 갱신.
 
 > The installer is built automatically on a Windows CI runner (see `.github/workflows/build-windows.yml`) — the maintainer does not build it by hand.
 
