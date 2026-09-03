@@ -210,13 +210,22 @@ def activate_chat_tab(main, cfg=None):
         103, 96, 110, 185, 200, 215, 230, 88, 120, 170, 245, 260,
         135, 151, 275, 290, 305, 320, 72, 55, 64, 48,
     ]
+    print(f"  채팅 탭 찾는 중: 창=({r.left},{r.top})~({r.right},{r.bottom}) 내비 x={nav_x - r.left}, 후보 y={ys[:4]}...")
     for y in ys:
         try:
-            auto.Click(nav_x, r.top + int(y), simulateMove=False)
-            time.sleep(0.7)
-            if _chat_list_ready(main, cfg):
-                print(f"  채팅 탭으로 전환함(내비 클릭 x={nav_x - r.left}, y={y}).")
-                return True
+            px, py = nav_x, r.top + int(y)
+            # 카톡이 직접 그리는 내비는 '호버 → 클릭' 순서라야 반응하는 경우가 있어
+            # 마우스를 실제로 옮겨 잠깐 올려둔 뒤 클릭한다(순간이동 클릭은 무시될 수 있음).
+            auto.MoveTo(px, py)
+            time.sleep(0.15)
+            auto.Click(px, py)                 # simulateMove 기본(True): 자연스러운 이동
+            # 느린 PC: 목록이 그려질 시간을 넉넉히, 두 번 확인
+            for _ in range(2):
+                time.sleep(0.9)
+                if _chat_list_ready(main, cfg):
+                    print(f"  채팅 탭으로 전환함(내비 클릭 x={nav_x - r.left}, y={y}).")
+                    return True
+            print(f"    (x={nav_x - r.left}, y={y}) 클릭 → 채팅목록 안 뜸")
             # 엉뚱한 걸 눌러 팝업/다른 탭이 떴으면 닫고 메인창 다시 포커스
             try:
                 auto.SendKeys("{Esc}", waitTime=0.05)
@@ -224,7 +233,8 @@ def activate_chat_tab(main, cfg=None):
                 pass
             time.sleep(0.2)
             _focus_window(main, cfg)
-        except Exception:
+        except Exception as e:
+            print(f"    (y={y}) 클릭 오류: {e}")
             continue
     print(f"  채팅 탭 전환 실패 — 창 크기 {r.right - r.left}x{r.bottom - r.top}. "
           "카톡에서 채팅 아이콘의 위치(창 위에서 몇 px)를 config chat_tab_scan_y 맨 앞에 넣어주세요.")
