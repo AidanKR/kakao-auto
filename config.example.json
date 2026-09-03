@@ -46,8 +46,8 @@
   "txt_subdir": "txt",
   "_txt_subdir": "날짜별 TXT 정리본을 담을 하위 폴더(기본 txt). 공유폴더 루트에 날짜 폴더가 쌓이는 게 싫을 때. \"\" 로 두면 예전처럼 루트에.",
 
-  "nightly_txt": true,
-  "_nightly_txt": "야간 배치에 TXT 정리 단계를 포함할지. CSV만 쓸 거면 false (날짜 폴더 아예 안 생김).",
+  "nightly_txt": false,
+  "_nightly_txt": "야간 배치에 TXT 정리 단계를 포함할지. 기본 false=CSV만(날짜 폴더 안 생김). 사람이 읽는 TXT도 원하면 true.",
 
   "share_dir": "C:/kakao_share",
   "_share_dir": "정리 결과 저장 폴더(/ 로!). 공유폴더 예: //서버/공유/kakao",

@@ -297,7 +297,39 @@ def _run_cli(cmd):
         print("  사용: nightly | collect | consolidate | dashboard | autostart | autostart-off")
 
 
+def _sync_config():
+    """config.example.json 에만 있는 새 설정을 config.json 에 자동으로 채워 넣는다.
+    기존 값은 그대로 두고 '없는 항목'만 추가하므로, 버전이 올라가도 사용자가
+    설정 파일을 손으로 고칠 필요가 없다. 원본은 config.json.bak 로 백업."""
+    import json
+    import shutil
+    cfg_p, ex_p = APP / "config.json", APP / "config.example.json"
+    if not cfg_p.exists() or not ex_p.exists():
+        return
+    try:
+        user = json.loads(cfg_p.read_text(encoding="utf-8-sig"))
+        ex = json.loads(ex_p.read_text(encoding="utf-8-sig"))
+    except Exception:
+        return                                  # 깨진 파일은 건드리지 않음
+    missing = [k for k in ex if k not in user]
+    if not missing:
+        return
+    merged = {k: user.get(k, v) for k, v in ex.items()}
+    for k, v in user.items():                   # 사용자만 가진 항목 보존
+        merged.setdefault(k, v)
+    try:
+        shutil.copy2(cfg_p, APP / "config.json.bak")
+        cfg_p.write_text(json.dumps(merged, ensure_ascii=False, indent=2),
+                         encoding="utf-8")
+        added = [k for k in missing if not k.startswith("_")]
+        if added:
+            print(f"  [설정] 새 항목 자동 추가: {', '.join(added)}")
+    except Exception as e:
+        print(f"  [설정] config.json 갱신 실패(무시): {e}")
+
+
 def main():
+    _sync_config()                     # 새 설정 자동 반영(손으로 고칠 필요 없음)
     args = [a for a in sys.argv[1:] if a.strip()]
     if args:                                   # 명령줄 모드(메뉴 없이 1회)
         _run_cli(args[0])

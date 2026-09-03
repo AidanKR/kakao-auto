@@ -3,6 +3,10 @@
 All notable changes to **kakao-auto** are documented here.
 Downloads: [Releases](https://github.com/AidanKR/kakao-auto/releases) · one-click Windows installer (`KakaoAuto-Setup.exe`).
 
+## v1.1.2
+- **설정 자동 채움** — 실행할 때 `config.json` 에 없는 새 항목을 **자동으로 추가**합니다(기존 값·보정값은 그대로 보존, 원본은 `config.json.bak` 백업). 버전이 올라가도 설정 파일을 손으로 고칠 필요가 없습니다.
+- **날짜 TXT 기본 끔** — `nightly_txt` 기본값 `false`. 날짜 폴더가 아예 생기지 않고 방별 CSV만 나옵니다(원하면 `true`).
+
 ## v1.1.1
 - **공유폴더 정리** — 날짜 폴더가 루트에 쌓이던 것을 **`txt/` 하위로** 모았습니다(`txt_subdir`, 기본 `"txt"`). 루트는 `csv/ · txt/ · media/ · kakao.db` 만 남아 깔끔합니다.
 - **TXT 아예 끄기** — CSV만 쓰면 `nightly_txt: false` 로 두면 날짜 폴더가 생기지 않습니다.
