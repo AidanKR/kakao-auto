@@ -687,11 +687,15 @@ def evaluate(cfg, conn, stats):
 
 
 def main():
+    once = any(a in ("once", "--once", "1") for a in sys.argv[1:])
     cfg = load_config()
     conn = db.connect()
     mode = cfg.get("mode", "cycle")
-    print(f"수집 시작 [mode={mode}] | dwell={cfg.get('dwell_ms',700)}ms | DB={db.DB_PATH.name}")
-    print("Ctrl+C 로 종료.\n")
+    if once:
+        print(f"수집 1회(once) [mode={mode}] | dwell={cfg.get('dwell_ms',700)}ms | DB={db.DB_PATH.name}")
+    else:
+        print(f"수집 시작 [mode={mode}] | dwell={cfg.get('dwell_ms',700)}ms | DB={db.DB_PATH.name}")
+        print("Ctrl+C 로 종료.\n")
     prev_status = "ok"
     kakao_missing_streak = 0
     error_streak = 0
@@ -748,6 +752,10 @@ def main():
                 alerts.notify(cfg, "CRITICAL",
                               f"수집 오류 {err_th}주기 연속 지속: {stats['note']}")
             prev_status = stats["status"]
+
+            if once:
+                print(f"\n수집 1회 완료: 방 {stats.get('rooms_opened',0)}개 · 신규 {stats.get('new_messages',0)}건")
+                break
 
             time.sleep(cfg.get("poll_seconds", 5))
     except KeyboardInterrupt:

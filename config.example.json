@@ -34,6 +34,9 @@
   "share_dir": "C:/kakao_share",
   "_share_dir": "정리 결과 저장 폴더(/ 로!). 공유폴더 예: //서버/공유/kakao",
 
+  "nightly_time": "02:00",
+  "_nightly_time": "무인 자동(메뉴 11)에서 매일 이 시각(HH:MM, 이 PC 로컬시간=한국이면 한국시간)에 '전체 수집→정리→종료' 배치 실행.",
+
   "copy_db": true,
   "_copy_db": "true면 정리 시 kakao.db 사본도 공유폴더에 복사.",
 
