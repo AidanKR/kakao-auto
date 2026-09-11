@@ -718,6 +718,7 @@ def run_cycle_pixel(cfg, conn, iso, today):
 
     row_h = cfg.get("row_height", 62)
     top_pad = cfg.get("list_top_pad", 6)
+    read_method = cfg.get("read_method", "export")   # export=Ctrl+S 전체기록(권장) / clipboard=화면분량
     cx = (left + right) // 2 - 15
     visible = max(1, int((bottom - top - top_pad) // row_h))
     max_scrolls = cfg.get("max_scrolls", 30)
@@ -725,34 +726,57 @@ def run_cycle_pixel(cfg, conn, iso, today):
 
     seen = set()
     stagnant = 0
+    total_new = 0
+    export_fail = 0
     for sc in range(max_scrolls):
         new_this = 0
         for row in range(visible):
             y = top + top_pad + int(row_h * row + row_h * 0.5)
             if y >= bottom - 2:
                 break
-            before = set(chat_windows_by_handle().keys())
-            pixel_double_click(cx, y)
-            time.sleep(dwell)
-            after = chat_windows_by_handle()
-            newh = [h for h in after if h not in before]
-            if not newh:
-                continue
-            handle = newh[0]
-            win = after[handle]
-            room = (win.Name or "").strip()
-            if not room or room in seen:
+            try:
+                before = set(chat_windows_by_handle().keys())
+                pixel_double_click(cx, y)
+                time.sleep(dwell)
+                after = chat_windows_by_handle()
+                newh = [h for h in after if h not in before]
+                if not newh:
+                    continue
+                handle = newh[0]
+                win = after[handle]
+                room = (win.Name or "").strip()
+                if not room or room in seen:
+                    close_window(win); wait_closed(handle)
+                    continue
+                seen.add(room)
+                new_this += 1
+                if read_method == "export":
+                    txt = export_room(win, cfg)
+                else:
+                    txt = clip_read(win, dwell)
+                if txt:
+                    total_new += store(conn, parse_clip(txt, room, today), room, iso)
+                else:
+                    export_fail += 1
                 close_window(win); wait_closed(handle)
+                print(f"  [{len(seen)}] {room} 읽고닫음")
+            except KeyboardInterrupt:
+                raise
+            except Exception as e:
+                # UIA COMError 등 일시 오류 → 이 방만 건너뛰고 계속(바퀴 전체를 끊지 않음)
+                print(f"  [건너뜀] 방 하나 오류(계속): {type(e).__name__}: {e}")
+                try:
+                    for _h, _w in chat_windows_by_handle().items():
+                        close_window(_w)
+                except Exception:
+                    pass
+                time.sleep(0.4)
                 continue
-            seen.add(room)
-            new_this += 1
-            txt = clip_read(win, dwell)
-            if txt is not None:
-                store(conn, parse_clip(txt, room, today), room, iso)
-            close_window(win); wait_closed(handle)
-            print(f"  [{len(seen)}] {room} 읽고닫음")
 
-        pixel_wheel_down(cx, (top + bottom) // 2, max(1, visible // 2))
+        try:
+            pixel_wheel_down(cx, (top + bottom) // 2, max(1, visible // 2))
+        except Exception:
+            pass
         time.sleep(dwell)
         if new_this == 0:
             stagnant += 1
@@ -763,8 +787,14 @@ def run_cycle_pixel(cfg, conn, iso, today):
             break
 
     for h, w in chat_windows_by_handle().items():   # 남은 창 정리
-        if close_window(w):
-            wait_closed(h, 1.0)
+        try:
+            if close_window(w):
+                wait_closed(h, 1.0)
+        except Exception:
+            pass
+
+    return {"kakao_running": True, "rooms_opened": len(seen), "new_messages": total_new,
+            "export_failures": export_fail, "note": ""}
 
 
 def evaluate(cfg, conn, stats):
