@@ -64,7 +64,7 @@ Press **`11`** once. A daily task is registered for **02:00** that runs the same
 
 - Change the time: set `"nightly_time": "02:00"` in `config.json`, then press `11` again.
 - Requirements at that hour: the PC is **on, logged in, and unlocked**, and **KakaoTalk is running on the Chats tab**.
-- **No monitor required.** Room cycling is keyboard-driven, so it works headless — verified on a laptop with a dead screen and nothing plugged in. Closing the lid is fine if the lid action is set to "Do nothing".
+- **Runs headless (no external monitor).** Verified unattended on a laptop with a dead internal screen, **lid closed** (set the lid action to "Do nothing"). The sweep drives the GUI by coordinates, so KakaoTalk must stay open on the Chats tab and the window position must be stable.
 - KakaoTalk is **left running**. Set `close_kakao_after: true` if you would rather it be closed.
 
 ## What you get
