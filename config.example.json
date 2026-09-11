@@ -4,8 +4,8 @@
   "mode": "cycle",
   "_mode": "cycle=메인창 목록 자동 순회(90개 자동). windows=별도 창 띄운 방만 읽음(테스트용).",
 
-  "cycle_method": "keys",
-  "_cycle_method": "keys=키보드 순회(권장, 줄높이 무관). pixel=마우스 좌표 더블클릭(대체용).",
+  "cycle_method": "pixel",
+  "_cycle_method": "pixel=좌표 더블클릭 순회(권장). keys=키보드 순회(이 카톡 버전은 방 닫으면 목록 포커스를 잃어 첫 방서 멈춤).",
 
   "read_method": "export",
   "_read_method": "export=Ctrl+S 대화내보내기(전체기록, 권장). clipboard=Ctrl+A/C 복사(화면분량만).",

@@ -113,6 +113,7 @@ C:\kakao_share\
 | It reads your friends list, not chats | KakaoTalk started on the **Friends tab**. Run menu `14` once to calibrate where the Chats icon is. |
 | `채팅목록을 못 찾음` (chat list not found) | KakaoTalk is closed or not logged in. Open it and switch to the Chats tab. |
 | The CSV folder is empty | Collecting only fills the database. Press **Enter** (full run) to produce CSVs. |
+| It reads only the first room then stops | The keyboard cycle loses focus after a room closes on this KakaoTalk build. Use coordinate mode: set `"cycle_method": "pixel"` in `config.json` (now the default). |
 | Cycling gets confused | Don't touch the mouse or keyboard while the batch runs — it is driving the GUI. |
 | Only emoticons got backed up | Check `skip_emoticons: true` (the default), and raise `media_min_bytes` to drop small images. |
 
