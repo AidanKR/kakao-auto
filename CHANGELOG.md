@@ -3,6 +3,13 @@
 All notable changes to **kakao-auto** are documented here.
 Downloads: [Releases](https://github.com/AidanKR/kakao-auto/releases) · one-click Windows installer (`KakaoAuto-Setup.exe`).
 
+## v1.2.4 — 사진 백업의 진짜 한계를 밝히고, 대화방 진단 추가
+
+**카카오톡은 받은 이미지를 `.cng` 로 암호화해 캐시에 둡니다.** 실측(2026-09-22): 같은 폴더의 `.cng` 5개가 앞 8바이트부터 전부 달라 공통 매직바이트가 없습니다(평문 PNG는 모두 `89 50 4E 47`로 시작). 크기는 573KB~987KB로 사진이 맞지만 **복사해도 열리지 않습니다.** `Documents\카카오톡 받은 파일`은 0개였고, `.png` 215개는 전부 이모티콘 팩(`DigitalItem`)이었습니다.
+
+- 기존 안내("받은 파일 저장 위치를 `media_dirs`에 지정하세요")는 **지정해도 소용없어 잘못된 안내**였습니다. 실제 이유와 선택지(`nightly_media: false`)를 알려주도록 교체했습니다.
+- **대화방 진단 추가(메뉴 `15` / `KakaoAuto.exe diagroom`)** — 열린 대화방 창의 UIA 구조를 `room_tree.txt` 로 뜨고, 마우스를 '사진/동영상' 버튼에 올려두면 창 기준 상대좌표를 `config.json`(`room_album_btn`)에 저장합니다. 캐시를 복호화하는 대신 **카카오톡 자신에게 저장을 시키는** 방식을 준비하기 위한 단계입니다. 좌표를 추측해서 누르지 않기 위해 구조부터 잽니다.
+
 ## v1.2.3 — 목록 끝 판정을 바로잡음(36방에서 멈추던 문제)
 
 v1.2.2 에서 목록 맨 위로는 돌아갔지만, **183방 중 36방만 돌고 끝났습니다.**
