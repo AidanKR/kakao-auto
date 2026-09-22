@@ -86,6 +86,51 @@ def pixel_wheel_up(x, y, notches):
     _U32.mouse_event(_WHEEL, 0, 0, 120 * int(notches), 0)
 
 
+def list_scroll_pos(chat):
+    """채팅목록의 세로 스크롤 위치(0~100)를 읽는다. 못 읽으면 None.
+
+    목록 자체는 앱이 직접 그려 UIA로 행을 읽을 수 없지만, 스크롤바는 UIA 에 잡힌다.
+    이 값으로 '휠이 실제로 목록을 움직였는지'를 측정한다(추정하지 않는다)."""
+    try:
+        sp = chat.GetScrollPattern()
+        if sp is not None:
+            v = sp.VerticalScrollPercent
+            if v is not None and v >= 0:
+                return round(float(v), 1)
+    except Exception:
+        pass
+    try:
+        for ch in chat.GetChildren():
+            for getter in ("GetRangeValuePattern", "GetScrollPattern"):
+                try:
+                    pat = getattr(ch, getter)()
+                except Exception:
+                    continue
+                if pat is None:
+                    continue
+                v = getattr(pat, "Value", None)
+                if v is None:
+                    v = getattr(pat, "VerticalScrollPercent", None)
+                if v is not None and v >= 0:
+                    return round(float(v), 1)
+    except Exception:
+        pass
+    return None
+
+
+def stagnant_next(stagnant, opened_this, new_this, pos_before, moved):
+    """이번 페이지 결과로 '진전 없음' 카운터를 갱신한다(목록 끝 판정).
+
+    '새 방이 없다'는 끝이 아니다 — 이미 본 방 구간을 지나는 중일 수 있다.
+    (2026-09-22 실측: 패스 2 가 맨 위 중복 구간에서 바로 끝나 0방으로 종료됐다.)
+    진짜 끝은 클릭해도 창이 안 열리거나, 새 방도 없고 스크롤도 더 안 내려갈 때다."""
+    if opened_this == 0:
+        return stagnant + 1
+    if new_this == 0 and (pos_before is None or not moved):
+        return stagnant + 1
+    return 0
+
+
 def scroll_list_home(cx, cy, cfg):
     """채팅목록을 맨 위로 되돌린다.
 
@@ -771,7 +816,8 @@ def run_cycle_pixel(cfg, conn, iso, today):
         print(f"  [패스 {pas + 1}/{passes}] 목록 맨 위로 올리고 시작")
         stagnant = 0
         for sc in range(max_scrolls):
-            new_this = 0
+            new_this = 0          # 이번 페이지에서 처음 본 방
+            opened_this = 0       # 이번 페이지에서 창이 실제로 열린 횟수(끝 판정의 진짜 기준)
             for row in range(visible):
                 y = top + top_pad + int(row_h * row + row_h * 0.5)
                 if y >= bottom - 2:
@@ -784,6 +830,7 @@ def run_cycle_pixel(cfg, conn, iso, today):
                     newh = [h for h in after if h not in before]
                     if not newh:
                         continue
+                    opened_this += 1
                     handle = newh[0]
                     win = after[handle]
                     room = (win.Name or "").strip()
@@ -818,22 +865,27 @@ def run_cycle_pixel(cfg, conn, iso, today):
             # 행높이 실측 보정 — 첫 패스 첫 페이지에서 '실제로 열린 방 수'가 곧 보이는 행 수다.
             # 설정 row_height 가 실제보다 작으면 같은 방을 두 번 클릭하거나 행을 건너뛴다.
             # (이사님 실측 2026-09-22: 화면에 5방인데 계산은 6행이었다.)
-            if pas == 0 and sc == 0 and 0 < new_this < visible:
-                row_h = int((bottom - top - top_pad) // new_this)
-                visible = new_this
-                print(f"  행높이 보정: 첫 페이지에 {new_this}방 -> 행높이 {row_h}px, 보이는 행 {visible}")
+            if pas == 0 and sc == 0 and 0 < opened_this < visible:
+                row_h = int((bottom - top - top_pad) // opened_this)
+                visible = opened_this
+                print(f"  행높이 보정: 첫 페이지에 {opened_this}방 -> 행높이 {row_h}px, 보이는 행 {visible}")
 
+            pos_before = list_scroll_pos(chat)
             try:
                 pixel_wheel_down(cx, cy, adv)
             except Exception:
                 pass
             time.sleep(dwell)
-            if new_this == 0:
-                stagnant += 1
-            else:
-                stagnant = 0
-            if stagnant >= stagnant_limit:
-                print(f"  목록 끝(새 방 {stagnant}페이지 연속 없음) -> 패스 {pas + 1} 종료 "
+            pos_after = list_scroll_pos(chat)
+            moved = (pos_before is not None and pos_after is not None and pos_after != pos_before)
+            print(f"  · 페이지{sc + 1}: 열림 {opened_this}/{visible} · 새 방 {new_this} · 누적 {len(seen)}"
+                  + (f" · 스크롤 {pos_before}->{pos_after}" if pos_before is not None else " · 스크롤 못 읽음"))
+
+            stagnant = stagnant_next(stagnant, opened_this, new_this, pos_before, moved)
+            # 스크롤 위치를 못 읽는 환경에서는 중복 구간을 더 오래 참는다(조기 종료 방지).
+            limit = stagnant_limit if pos_before is not None else max(stagnant_limit, 12)
+            if stagnant >= limit:
+                print(f"  목록 끝({stagnant}페이지 연속 진전 없음) -> 패스 {pas + 1} 종료 "
                       f"(누적 {len(seen)}개 방)")
                 break
         else:
