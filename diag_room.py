@@ -1,12 +1,13 @@
 """
-진단 — 열려 있는 '대화방 창'의 UIA 구조를 덤프하고, 사진첩 버튼 좌표를 보정한다.
+진단 — 카카오톡이 띄운 창(대화방 · 채팅방 서랍)의 UIA 구조를 덤프하고 좌표를 보정한다.
 
 카카오톡 대화방에서 받은 사진은 캐시에 .cng 로 암호화돼 있어 그대로는 못 쓴다(2026-09-22 실측).
 대신 카카오톡 자신에게 '사진/동영상 모아보기 → 저장'을 시키면 평문으로 떨어진다.
 그 버튼을 추측 좌표로 누르면 안 되므로(채팅 탭에서 겪은 전례), 여기서 실제 구조를 먼저 잰다.
 
 쓰는 법:
-  1) 카카오톡에서 대화방을 하나 열어 둔다(사진이 있는 방이면 더 좋다).
+  1) **채팅방 서랍**을 열어 둔다(대화방 우측 위 ≡ → 채팅방 서랍 → 사진/동영상).
+     서랍 창 좌측에 전체 방 목록이 있어 방마다 대화방을 열 필요가 없다(2026-09-22 실측).
   2) KakaoAuto.exe diagroom   (또는 python diag_room.py)
   3) room_tree.txt 를 개발자에게 보낸다.
   4) 안내가 나오면 마우스를 '사진/동영상' 버튼 위에 올려둔다 → 좌표가 config 에 저장된다.
@@ -48,14 +49,35 @@ def _load_cfg_raw():
     return {}
 
 
+def _kakao_pid(auto):
+    """카카오톡 메인 창의 프로세스 id. 못 찾으면 None."""
+    for w in auto.GetRootControl().GetChildren():
+        try:
+            if (w.ClassName or "") == "EVA_Window_Dblclk" and (w.Name or "") == "카카오톡":
+                return w.ProcessId
+        except Exception:
+            continue
+    return None
+
+
 def _room_windows(auto):
-    """메인 창을 뺀 대화방 창들. collector.chat_windows_by_handle 과 같은 기준."""
+    """카카오톡이 띄운 최상위 창 전부(메인 창 제외).
+
+    2026-09-22 실측: '채팅방 서랍'은 대화방과 **다른 별도 창**이고 좌측에 전체 방 목록을
+    담고 있다. 클래스로 거르면(EVA_Window_Dblclk) 이 창을 놓치므로, 같은 프로세스가 띄운
+    창을 모두 잡는다. 클래스는 결과에 함께 적어 둔다."""
+    pid = _kakao_pid(auto)
     out = []
     for w in auto.GetRootControl().GetChildren():
         try:
-            if (w.ClassName or "") == "EVA_Window_Dblclk" \
-                    and (w.Name or "").strip() and (w.Name or "") != "카카오톡":
-                out.append(w)
+            nm = (w.Name or "").strip()
+            if not nm or nm == "카카오톡":
+                continue
+            if pid is not None and w.ProcessId != pid:
+                continue
+            if pid is None and (w.ClassName or "") != "EVA_Window_Dblclk":
+                continue
+            out.append(w)
         except Exception:
             continue
     return out
@@ -64,11 +86,12 @@ def _room_windows(auto):
 def _dump(win, lines):
     try:
         r = win.BoundingRectangle
-        lines.append(f"[대화방 '{win.Name}'] rect=({r.left},{r.top},{r.right},{r.bottom}) "
+        lines.append(f"[창 '{win.Name}'] class='{win.ClassName}' "
+                     f"rect=({r.left},{r.top},{r.right},{r.bottom}) "
                      f"size={r.right - r.left}x{r.bottom - r.top}")
         base_l, base_t = r.left, r.top
     except Exception:
-        lines.append(f"[대화방 '{win.Name}'] rect 읽기 실패")
+        lines.append(f"[창 '{win.Name}'] rect 읽기 실패")
         base_l = base_t = 0
 
     def walk(c, depth=0):
@@ -105,8 +128,8 @@ def calibrate(win, seconds=8):
         print("  창 좌표를 못 읽어 보정을 건너뜁니다.")
         return
     print()
-    print("  ── 사진첩 버튼 좌표 보정 ──")
-    print("  대화방에서 '사진/동영상'(또는 서랍·목록 보기) 버튼 위에 마우스를 올려두세요.")
+    print("  ── 좌표 보정 ──")
+    print("  맞출 지점 위에 마우스를 올려두세요(예: 서랍 창의 첫 사진 썸네일 왼쪽 위).")
     print(f"  {seconds}초 뒤 그 지점을 저장합니다. 누르지 말고 올려만 두세요.")
     for i in range(seconds, 0, -1):
         print(f"    {i}...", end="\r", flush=True)
@@ -115,7 +138,7 @@ def calibrate(win, seconds=8):
     rel_x, rel_y = x - r.left, y - r.top
     print(f"  잰 좌표: 화면({x},{y}) · 창기준({rel_x},{rel_y})           ")
     if not (0 <= rel_x <= (r.right - r.left) and 0 <= rel_y <= (r.bottom - r.top)):
-        print("  ⚠ 대화방 창 밖입니다. 저장하지 않습니다. 다시 실행해 주세요.")
+        print(f"  ⚠ '{win.Name}' 창 밖입니다. 저장하지 않습니다. 다시 실행해 주세요.")
         return
     cfg = _load_cfg_raw()
     cfg["room_album_btn"] = [rel_x, rel_y]
@@ -139,12 +162,17 @@ def main():
     wins = _room_windows(auto)
     lines = []
     if not wins:
-        msg = ("열려 있는 대화방 창이 없습니다. "
-               "카카오톡에서 대화방을 하나 열어 두고 다시 실행하세요.")
+        msg = ("카카오톡이 띄운 창이 없습니다. 대화방이나 '채팅방 서랍'을 "
+               "열어 두고 다시 실행하세요.")
         print(msg)
         lines.append(msg)
     else:
-        print(f"대화방 창 {len(wins)}개 발견 — 구조를 뜹니다.")
+        print(f"카카오톡 창 {len(wins)}개 발견 — 구조를 뜹니다.")
+        for w in wins:
+            try:
+                print(f"  · '{w.Name}'  class={w.ClassName}")
+            except Exception:
+                pass
         for w in wins:
             _dump(w, lines)
             lines.append("")
