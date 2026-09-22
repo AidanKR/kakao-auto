@@ -42,7 +42,6 @@ MENU = """
  12) 무인 자동 해제
  13) 방별 CSV 내보내기 (방 하나당 CSV 하나 · 서버 분석용)
  14) 채팅 탭 위치 보정 (마우스를 채팅 아이콘에 올려두면 자동 저장)
- 15) 대화방 진단 — 사진첩 버튼 찾기 (대화방 하나 열어두고 실행)
   0) 종료
 ============================================"""
 
@@ -375,8 +374,6 @@ def _run_cli(cmd):
         _run("export_rooms_csv")
     elif cmd in ("diag", "진단"):
         _run("diag_kakao")
-    elif cmd in ("diagroom", "방진단"):
-        _run("diag_room")
     elif cmd in ("collect", "collector"):
         _run("collector")
     elif cmd in ("consolidate", "정리"):
@@ -445,7 +442,6 @@ def main():
         "12": remove_autostart,
         "13": lambda: _run("export_rooms_csv"),
         "14": lambda: (_run("diag_kakao"), _open(APP / "kakao_tree.txt")),
-        "15": lambda: (_run("diag_room"), _open(APP / "room_tree.txt")),
     }
     while True:
         print(MENU)
