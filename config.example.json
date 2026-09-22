@@ -40,6 +40,18 @@
   "max_scrolls": 30,
   "_max_scrolls": "cycle: 한 바퀴에 스크롤 최대 횟수(방 많으면 늘리기).",
 
+  "scroll_notches": 1,
+  "_scroll_notches": "cycle(pixel): 한 페이지 훑은 뒤 내리는 휠 눈금. 1=조금씩 내려 페이지가 겹치게(방 누락 방지, 권장). 방을 건너뛰면 그대로, 너무 느리면 2.",
+
+  "scroll_home_notches": 150,
+  "_scroll_home_notches": "cycle(pixel): 바퀴 시작/종료 때 목록을 맨 위로 올리는 휠 눈금 총량. 방이 아주 많으면(300+) 늘리기. **이 값이 부족하면 최하단 몇 방만 반복 수집됨(2026-09-16~21 장애 원인).**",
+
+  "stagnant_limit": 4,
+  "_stagnant_limit": "cycle: 새 방이 없는 페이지가 이 횟수 연속이면 목록 끝으로 보고 종료. 작으면(2) 중복 구간에서 조기 종료됨.",
+
+  "list_passes": 2,
+  "_list_passes": "cycle(pixel): 한 번 돈 뒤 커버리지가 coverage_min_ratio 미만이면 맨 위부터 다시 도는 최대 횟수. 1=한 번만.",
+
   "max_rooms": 600,
   "_max_rooms": "cycle: 한 바퀴 순회 방 개수 안전상한. 목록 끝나면 알아서 멈춤. 아주 많으면 늘리기.",
 

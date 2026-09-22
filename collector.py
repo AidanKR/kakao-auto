@@ -80,6 +80,32 @@ def pixel_wheel_down(x, y, notches):
     _U32.mouse_event(_WHEEL, 0, 0, -120 * int(notches), 0)
 
 
+def pixel_wheel_up(x, y, notches):
+    _cursor(x, y)
+    time.sleep(0.05)
+    _U32.mouse_event(_WHEEL, 0, 0, 120 * int(notches), 0)
+
+
+def scroll_list_home(cx, cy, cfg):
+    """채팅목록을 맨 위로 되돌린다.
+
+    실측(2026-09-22, 코드): pixel 순회는 휠을 내리기만 하므로 한 바퀴가 끝난 자리가
+    목록 최하단이다. 카카오톡은 이 스크롤 위치를 유지하므로, 초기화하지 않으면 다음
+    회차가 최하단에서 시작해 마지막 한 페이지(이 PC 실측 6방)만 돌고 stagnant 로 끝난다.
+    최상단 도달 여부는 UIA 로 읽을 수 없으므로(목록은 앱이 직접 그림) 넉넉히 올린다."""
+    total = max(10, int(cfg.get("scroll_home_notches", 150)))
+    done = 0
+    while done < total:
+        n = min(10, total - done)
+        try:
+            pixel_wheel_up(cx, cy, n)
+        except Exception:
+            break
+        done += n
+        time.sleep(0.08)
+    time.sleep(cfg.get("dwell_ms", 700) / 1000.0)
+
+
 # ── 설정 ─────────────────────────────────────────────────
 def _read_smart(p):
     data = p.read_bytes()
@@ -720,78 +746,120 @@ def run_cycle_pixel(cfg, conn, iso, today):
     top_pad = cfg.get("list_top_pad", 6)
     read_method = cfg.get("read_method", "export")   # export=Ctrl+S 전체기록(권장) / clipboard=화면분량
     cx = (left + right) // 2 - 15
+    cy = (top + bottom) // 2
     visible = max(1, int((bottom - top - top_pad) // row_h))
-    max_scrolls = cfg.get("max_scrolls", 30)
-    print(f"  목록 T{top}~B{bottom}, 행높이 {row_h}px, 보이는 행 ~{visible}")
+    # 한 번에 내리는 휠 눈금. 눈금당 몇 줄 내려가는지는 카카오톡이 정하므로 측정할 수 없다.
+    # 적게 내려 페이지가 겹치게 하고(방 누락 방지) 반복으로 커버한다.
+    adv = max(1, int(cfg.get("scroll_notches", 1)))
+    # max_scrolls 는 무한루프 안전망일 뿐, 종료는 stagnant 가 판단한다. 예전 기본값(30)이
+    # 남은 설정 파일에서 목록 중간에 끊기지 않도록 하한을 둔다.
+    max_scrolls = max(int(cfg.get("max_scrolls", 30)), 300)
+    stagnant_limit = max(2, int(cfg.get("stagnant_limit", 4)))
+    passes = max(1, int(cfg.get("list_passes", 2)))
+    cov_min = cfg.get("coverage_min_ratio", 0.7)
+    known = db.room_count(conn)
+    print(f"  목록 T{top}~B{bottom}, 행높이 {row_h}px, 보이는 행 ~{visible}, "
+          f"전진 {adv}눈금, 아는 방 {known}개")
 
     seen = set()
-    stagnant = 0
     total_new = 0
     export_fail = 0
-    for sc in range(max_scrolls):
-        new_this = 0
-        for row in range(visible):
-            y = top + top_pad + int(row_h * row + row_h * 0.5)
-            if y >= bottom - 2:
-                break
-            try:
-                before = set(chat_windows_by_handle().keys())
-                pixel_double_click(cx, y)
-                time.sleep(dwell)
-                after = chat_windows_by_handle()
-                newh = [h for h in after if h not in before]
-                if not newh:
-                    continue
-                handle = newh[0]
-                win = after[handle]
-                room = (win.Name or "").strip()
-                if not room or room in seen:
-                    close_window(win); wait_closed(handle)
-                    continue
-                seen.add(room)
-                new_this += 1
-                if read_method == "export":
-                    txt = export_room(win, cfg)
-                else:
-                    txt = clip_read(win, dwell)
-                if txt:
-                    total_new += store(conn, parse_clip(txt, room, today), room, iso)
-                else:
-                    export_fail += 1
-                close_window(win); wait_closed(handle)
-                print(f"  [{len(seen)}] {room} 읽고닫음")
-            except KeyboardInterrupt:
-                raise
-            except Exception as e:
-                # UIA COMError 등 일시 오류 → 이 방만 건너뛰고 계속(바퀴 전체를 끊지 않음)
-                print(f"  [건너뜀] 방 하나 오류(계속): {type(e).__name__}: {e}")
+    for pas in range(passes):
+        # ★ 반드시 맨 위부터. pixel 순회는 내리기만 하므로 초기화 없이는 지난 회차가
+        #   남겨둔 최하단에서 시작해 마지막 한 페이지만 돈다(2026-09-16~21 무저장 원인).
+        scroll_list_home(cx, cy, cfg)
+        print(f"  [패스 {pas + 1}/{passes}] 목록 맨 위로 올리고 시작")
+        stagnant = 0
+        for sc in range(max_scrolls):
+            new_this = 0
+            for row in range(visible):
+                y = top + top_pad + int(row_h * row + row_h * 0.5)
+                if y >= bottom - 2:
+                    break
                 try:
-                    for _h, _w in chat_windows_by_handle().items():
-                        close_window(_w)
-                except Exception:
-                    pass
-                time.sleep(0.4)
-                continue
+                    before = set(chat_windows_by_handle().keys())
+                    pixel_double_click(cx, y)
+                    time.sleep(dwell)
+                    after = chat_windows_by_handle()
+                    newh = [h for h in after if h not in before]
+                    if not newh:
+                        continue
+                    handle = newh[0]
+                    win = after[handle]
+                    room = (win.Name or "").strip()
+                    if not room or room in seen:
+                        close_window(win); wait_closed(handle)
+                        continue
+                    seen.add(room)
+                    new_this += 1
+                    if read_method == "export":
+                        txt = export_room(win, cfg)
+                    else:
+                        txt = clip_read(win, dwell)
+                    if txt:
+                        total_new += store(conn, parse_clip(txt, room, today), room, iso)
+                    else:
+                        export_fail += 1
+                    close_window(win); wait_closed(handle)
+                    print(f"  [{len(seen)}] {room} 읽고닫음")
+                except KeyboardInterrupt:
+                    raise
+                except Exception as e:
+                    # UIA COMError 등 일시 오류 → 이 방만 건너뛰고 계속(바퀴 전체를 끊지 않음)
+                    print(f"  [건너뜀] 방 하나 오류(계속): {type(e).__name__}: {e}")
+                    try:
+                        for _h, _w in chat_windows_by_handle().items():
+                            close_window(_w)
+                    except Exception:
+                        pass
+                    time.sleep(0.4)
+                    continue
 
-        try:
-            pixel_wheel_down(cx, (top + bottom) // 2, max(1, visible // 2))
-        except Exception:
-            pass
-        time.sleep(dwell)
-        if new_this == 0:
-            stagnant += 1
+            # 행높이 실측 보정 — 첫 패스 첫 페이지에서 '실제로 열린 방 수'가 곧 보이는 행 수다.
+            # 설정 row_height 가 실제보다 작으면 같은 방을 두 번 클릭하거나 행을 건너뛴다.
+            # (이사님 실측 2026-09-22: 화면에 5방인데 계산은 6행이었다.)
+            if pas == 0 and sc == 0 and 0 < new_this < visible:
+                row_h = int((bottom - top - top_pad) // new_this)
+                visible = new_this
+                print(f"  행높이 보정: 첫 페이지에 {new_this}방 -> 행높이 {row_h}px, 보이는 행 {visible}")
+
+            try:
+                pixel_wheel_down(cx, cy, adv)
+            except Exception:
+                pass
+            time.sleep(dwell)
+            if new_this == 0:
+                stagnant += 1
+            else:
+                stagnant = 0
+            if stagnant >= stagnant_limit:
+                print(f"  목록 끝(새 방 {stagnant}페이지 연속 없음) -> 패스 {pas + 1} 종료 "
+                      f"(누적 {len(seen)}개 방)")
+                break
         else:
-            stagnant = 0
-        if stagnant >= 2:
-            print(f"  더 이상 새 방 없음 -> 이번 바퀴 종료 (총 {len(seen)}개 방)")
-            break
+            print(f"  스크롤 상한 {max_scrolls} 도달 -> 패스 {pas + 1} 종료 (누적 {len(seen)}개 방)")
 
-    for h, w in chat_windows_by_handle().items():   # 남은 창 정리
+        # 아는 방의 cov_min 이상을 돌았으면 추가 패스 불필요(시간 절약).
+        if known and len(seen) >= known * cov_min:
+            break
+        if pas + 1 < passes:
+            print(f"  커버리지 {len(seen)}/{known} — 맨 위부터 한 번 더 돕니다")
+
+    for h, w in chat_windows_by_handle().items():
         try:
             if close_window(w):
                 wait_closed(h, 1.0)
         except Exception:
             pass
+
+    # 끝낼 때도 목록을 맨 위로 되돌려 둔다(이사님 실측 2026-09-22: 최하단 5개 방만 반복됨).
+    # 시작할 때 올리는 것이 근본 조치이고, 이건 배치가 중간에 죽더라도 사람이 카톡을
+    # 열었을 때 정상 위치로 보이게 하는 마무리다.
+    try:
+        scroll_list_home(cx, cy, cfg)
+        print("  목록을 맨 위로 되돌려 둠")
+    except Exception:
+        pass
 
     return {"kakao_running": True, "rooms_opened": len(seen), "new_messages": total_new,
             "export_failures": export_fail, "note": ""}

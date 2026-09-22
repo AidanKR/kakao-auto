@@ -114,6 +114,8 @@ C:\kakao_share\
 | `채팅목록을 못 찾음` (chat list not found) | KakaoTalk is closed or not logged in. Open it and switch to the Chats tab. |
 | The CSV folder is empty | Collecting only fills the database. Press **Enter** (full run) to produce CSVs. |
 | It reads only the first room then stops | The keyboard cycle loses focus after a room closes on this KakaoTalk build. Use coordinate mode: set `"cycle_method": "pixel"` in `config.json` (now the default). |
+| It only ever collects the same few rooms (new messages never appear) | Fixed in **v1.2.2**. The coordinate cycle scrolled down only and never returned to the top, so every later run started at the bottom of the list and covered just the last page. Update, or raise `scroll_home_notches` if you have 300+ rooms. |
+| The nightly run "succeeds" but nothing is saved | Read `logs/nightly-YYYYMMDD.log` (added in v1.2.2). The batch now prints a summary — rooms opened / known rooms, new messages, export failures — and exits with code 2 when it covered almost nothing. |
 | Cycling gets confused | Don't touch the mouse or keyboard while the batch runs — it is driving the GUI. |
 | Only emoticons got backed up | Check `skip_emoticons: true` (the default), and raise `media_min_bytes` to drop small images. |
 

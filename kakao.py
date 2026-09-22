@@ -185,8 +185,100 @@ def _stop_kakao():
     print("  카톡 종료함.")
 
 
+class _Tee:
+    """표준출력을 화면과 로그파일 양쪽에 쓴다(야간 배치 회차 기록 보존용)."""
+
+    def __init__(self, *streams):
+        self._streams = [st for st in streams if st is not None]
+
+    def write(self, s):
+        for st in self._streams:
+            try:
+                st.write(s)
+                st.flush()
+            except Exception:
+                pass
+        return len(s)
+
+    def flush(self):
+        for st in self._streams:
+            try:
+                st.flush()
+            except Exception:
+                pass
+
+    def isatty(self):
+        return False
+
+
+def _nightly_log_open():
+    """logs/nightly-YYYYMMDD.log 열기. 실패하면 None(로그 없이 진행).
+
+    schtasks 로 도는 회차는 콘솔 출력이 버려져 사후에 아무것도 확인할 수 없었다
+    (2026-09-16~21 무저장 회차의 로그가 남지 않은 이유). 파일로 남긴다."""
+    from datetime import datetime
+    try:
+        d = APP / "logs"
+        d.mkdir(parents=True, exist_ok=True)
+        f = (d / f"nightly-{datetime.now():%Y%m%d}.log").open("a", encoding="utf-8")
+        f.write(f"\n===== {datetime.now():%Y-%m-%d %H:%M:%S} 배치 시작 =====\n")
+        # 보관: 30일 넘은 로그 정리
+        import time as _t
+        cutoff = _t.time() - 30 * 86400
+        for old_log in d.glob("nightly-*.log"):
+            try:
+                if old_log.stat().st_mtime < cutoff:
+                    old_log.unlink()
+            except Exception:
+                pass
+        return f
+    except Exception:
+        return None
+
+
+def _nightly_summary():
+    """health.json 을 읽어 이번 회차 결과를 한 줄로 요약하고 판정한다."""
+    try:
+        import health
+        h = health.read_health() or {}
+    except Exception:
+        return None
+    opened = h.get("rooms_opened", 0)
+    known = h.get("known_rooms", 0)
+    print(f"- 결과: 연 방 {opened}/{known} · 신규 {h.get('new_messages', 0)}건 · "
+          f"내보내기 실패 {h.get('export_failures', 0)}건 · 상태 {h.get('status', '?')}"
+          + (f" ({h['note']})" if h.get("note") else ""))
+    return h
+
+
 def _nightly():
     """[야간 배치] 카톡 실행 → 전체 1회 수집 → 정리(TXT) → 방별 CSV → (사진 백업) → 카톡 종료."""
+    logf = _nightly_log_open()
+    if logf is not None:
+        sys.stdout = _Tee(sys.__stdout__, logf)
+        sys.stderr = sys.stdout
+    try:
+        _nightly_body()
+    finally:
+        h = _nightly_summary()
+        if logf is not None:
+            print(f"- 이 회차 로그: {APP / 'logs'}")
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+            try:
+                logf.close()
+            except Exception:
+                pass
+        # 배치가 사실상 아무것도 못 했으면 실패로 끝낸다(schtasks 마지막 결과로 드러나게).
+        if h and h.get("known_rooms", 0) >= 20:
+            opened, known = h.get("rooms_opened", 0), h["known_rooms"]
+            if opened < known * 0.3:
+                print(f"!! 수집 실패로 판정: 연 방 {opened}/{known}. "
+                      f"카카오톡이 '채팅' 탭인지, 목록이 정상인지 확인하세요.")
+                sys.exit(2)
+
+
+def _nightly_body():
     cfg = _load_cfg()
     win = sys.platform.startswith("win")
     print("=== KakaoAuto 야간 배치 시작 ===")

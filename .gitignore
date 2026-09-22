@@ -27,3 +27,4 @@ media/
 build/
 dist/
 *.spec
+logs/
