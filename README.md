@@ -118,6 +118,7 @@ C:\kakao_share\
 | The nightly run "succeeds" but nothing is saved | Read `logs/nightly-YYYYMMDD.log` (added in v1.2.2). The batch now prints a summary — rooms opened / known rooms, new messages, export failures — and exits with code 2 when it covered almost nothing. |
 | Cycling gets confused | Don't touch the mouse or keyboard while the batch runs — it is driving the GUI. |
 | Only emoticons got backed up | Check `skip_emoticons: true` (the default), and raise `media_min_bytes` to drop small images. |
+| Photo backup finds nothing | KakaoTalk stores received images **encrypted** (`.cng`) in its cache — copying them is pointless, they won't open. Only files you explicitly saved from KakaoTalk (default: `Documents\카카오톡 받은 파일`) can be backed up. Set `nightly_media: false` if you don't need this step. |
 
 ## Configuration
 

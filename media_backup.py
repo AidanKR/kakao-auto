@@ -157,7 +157,18 @@ def main():
     print(f"미디어 백업: 새로 {copied}개 복사 · 중복 {skipped} · 스캔 {scanned}"
           f" · 이모티콘/스티커 제외 {emoticon_skipped} → {out}")
     if copied == 0 and scanned == 0:
-        print("  ⚠ 대상 파일을 못 찾음. 카톡 '받은 파일 저장 위치'를 config media_dirs 에 지정하세요.")
+        # 카카오톡은 받은 이미지를 .cng 로 '암호화'해 캐시에 둔다(2026-09-22 실측: 같은 폴더의
+        # .cng 5개가 앞 8바이트부터 전부 달라 공통 매직바이트가 없음 = 평문 이미지가 아님).
+        # 복사해도 열리지 않으므로 복사 대상이 아니다. 사용자가 카톡에서 직접 저장한 파일만 백업된다.
+        enc = 0
+        for d in dirs:
+            for root, _, files in os.walk(d):
+                enc += sum(1 for fn in files if fn.lower().endswith(".cng"))
+        print("  ⚠ 백업할 평문 이미지가 없습니다.")
+        if enc:
+            print(f"     카톡 캐시에 암호화 파일(.cng) {enc}개가 있으나 복사해도 열 수 없습니다.")
+        print("     카카오톡에서 직접 저장한 파일만 백업됩니다(기본 위치: 문서\\카카오톡 받은 파일).")
+        print("     이 기능이 필요 없으면 config 의 nightly_media 를 false 로 두세요.")
 
 
 if __name__ == "__main__":
