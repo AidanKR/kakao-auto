@@ -6,11 +6,13 @@
 그 버튼을 추측 좌표로 누르면 안 되므로(채팅 탭에서 겪은 전례), 여기서 실제 구조를 먼저 잰다.
 
 쓰는 법:
-  1) **채팅방 서랍**을 열어 둔다(대화방 우측 위 ≡ → 채팅방 서랍 → 사진/동영상).
-     서랍 창 좌측에 전체 방 목록이 있어 방마다 대화방을 열 필요가 없다(2026-09-22 실측).
+  1) **채팅방 서랍**을 열고 사진이 여러 줄 나오는 방의 '사진/동영상' 탭까지 띄워 둔다
+     (대화방 우측 위 ≡ → 채팅방 서랍 → 사진/동영상). 서랍 창 좌측에 전체 방 목록이 있어
+     방마다 대화방을 열 필요가 없다(2026-09-22 실측).
   2) KakaoAuto.exe diagroom   (또는 python diag_room.py)
   3) room_tree.txt 를 개발자에게 보낸다.
-  4) 안내가 나오면 마우스를 '사진/동영상' 버튼 위에 올려둔다 → 좌표가 config 에 저장된다.
+  4) 안내에 따라 지점 4곳(첫 썸네일·옆 썸네일·다음 줄 썸네일·저장 버튼)에 순서대로
+     마우스를 올려둔다 → 좌표가 config.json 에 저장된다.
 
 출력: <appdir>/room_tree.txt
 """
@@ -120,36 +122,53 @@ def _dump(win, lines):
     walk(win)
 
 
-def calibrate(win, seconds=8):
-    """마우스를 '사진/동영상' 버튼에 올려두게 하고 창 기준 상대좌표를 config 에 저장."""
+# 서랍에서 잴 지점들. 순서대로 마우스를 올려두게 안내한다.
+# thumb0/thumb1 = 그리드 가로 간격 계산용(같은 줄 인접 썸네일), thumb_row2 = 세로 간격 계산용
+# (그리드 사이에 월별 헤더가 끼어 있어 세로 간격은 줄마다 다를 수 있음 — 실측으로 확인할 것).
+CALIB_POINTS = [
+    ("drawer_thumb0", "첫 번째(왼쪽 위) 사진 썸네일의 정중앙"),
+    ("drawer_thumb1", "같은 줄 바로 오른쪽 사진 썸네일의 정중앙(가로 간격 계산용)"),
+    ("drawer_thumb_row2", "다음 줄 첫 번째 사진 썸네일의 정중앙(세로 간격 계산용, 같은 줄이면 아무 사진이나 다시)"),
+    ("drawer_save_btn", "하단의 '저장' 버튼"),
+]
+
+
+def calibrate_points(win, points=None, seconds=6):
+    """여러 지점을 순서대로 안내하며 창 기준 상대좌표를 config 에 저장.
+
+    지점마다 확인을 기다리지 않고 카운트다운으로 진행한다 — 대화방 서랍은 화면마다
+    썸네일 배치가 달라질 수 있어(방마다 사진 수가 다름) 매번 실측해야 한다."""
+    points = points or CALIB_POINTS
     try:
         r = win.BoundingRectangle
     except Exception:
         print("  창 좌표를 못 읽어 보정을 건너뜁니다.")
         return
-    print()
-    print("  ── 좌표 보정 ──")
-    print("  맞출 지점 위에 마우스를 올려두세요(예: 서랍 창의 첫 사진 썸네일 왼쪽 위).")
-    print(f"  {seconds}초 뒤 그 지점을 저장합니다. 누르지 말고 올려만 두세요.")
-    for i in range(seconds, 0, -1):
-        print(f"    {i}...", end="\r", flush=True)
-        time.sleep(1)
-    x, y = _cursor_pos()
-    rel_x, rel_y = x - r.left, y - r.top
-    print(f"  잰 좌표: 화면({x},{y}) · 창기준({rel_x},{rel_y})           ")
-    if not (0 <= rel_x <= (r.right - r.left) and 0 <= rel_y <= (r.bottom - r.top)):
-        print(f"  ⚠ '{win.Name}' 창 밖입니다. 저장하지 않습니다. 다시 실행해 주세요.")
-        return
     cfg = _load_cfg_raw()
-    cfg["room_album_btn"] = [rel_x, rel_y]
-    cfg["_room_album_btn"] = ("대화방 '사진/동영상' 버튼의 창 기준 상대좌표 [x,y]. "
-                              "메뉴 15(대화방 진단)에서 마우스를 올려두면 자동 저장.")
-    try:
-        (HERE / "config.json").write_text(
-            json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"  config.json 에 저장했습니다: room_album_btn = [{rel_x}, {rel_y}]")
-    except Exception as e:
-        print("  저장 실패:", e)
+    saved = {}
+    for key, desc in points:
+        print()
+        print(f"  ── [{key}] {desc} 위에 마우스를 올려두세요 ──")
+        print(f"  {seconds}초 뒤 저장합니다. 누르지 말고 올려만 두세요. (해당 지점이 없으면 그대로 두면 창 밖으로 판정돼 건너뜁니다)")
+        for i in range(seconds, 0, -1):
+            print(f"    {i}...", end="\r", flush=True)
+            time.sleep(1)
+        x, y = _cursor_pos()
+        rel_x, rel_y = x - r.left, y - r.top
+        ok = 0 <= rel_x <= (r.right - r.left) and 0 <= rel_y <= (r.bottom - r.top)
+        print(f"  화면({x},{y}) · 창기준({rel_x},{rel_y})  {'저장함' if ok else '창 밖 — 건너뜀'}          ")
+        if ok:
+            cfg[key] = [rel_x, rel_y]
+            saved[key] = [rel_x, rel_y]
+    if saved:
+        try:
+            (HERE / "config.json").write_text(
+                json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(f"\nconfig.json 에 저장: {saved}")
+        except Exception as e:
+            print("  저장 실패:", e)
+    else:
+        print("\n저장된 지점이 없습니다.")
 
 
 def main():
@@ -186,7 +205,10 @@ def main():
         print("\n".join(lines[:200]))
 
     if wins:
-        calibrate(wins[0])
+        target = next((w for w in wins if "서랍" in (w.Name or "")), wins[0])
+        print(f"\n보정 대상 창: '{target.Name}'"
+              + ("  (서랍 창을 찾아 우선 선택함)" if target is not wins[0] else ""))
+        calibrate_points(target)
 
 
 if __name__ == "__main__":
