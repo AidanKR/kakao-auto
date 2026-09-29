@@ -131,6 +131,19 @@ def stagnant_next(stagnant, opened_this, new_this, pos_before, moved):
     return 0
 
 
+def next_scroll_advance(base, current, new_this, cap):
+    """다음 페이지에 쓸 휠 전진량(눈금 수)을 정한다.
+
+    이사님 실측(2026-09-29): 어떤 PC는 휠 1눈금이 화면을 거의 못 움직여, 스크롤 뒤에도
+    똑같은 행이 보여 매 페이지 같은(이미 본) 방만 다시 열고 아래쪽 방에는 도달하지
+    못했다("살짝 내리고는 맨 위 방을 또 읽음"). 이번 페이지에 새 방이 0개였다면 다음
+    전진량을 2배로 늘려 더 내려가 보고, 새 방이 나오면 기본값(base)으로 되돌려 평소엔
+    과도하게 건너뛰지 않는다(안전 마진 유지)."""
+    if new_this > 0:
+        return base
+    return min(max(current * 2, base), cap)
+
+
 def scroll_list_home(cx, cy, cfg):
     """채팅목록을 맨 위로 되돌린다.
 
@@ -792,10 +805,20 @@ def run_cycle_pixel(cfg, conn, iso, today):
     read_method = cfg.get("read_method", "export")   # export=Ctrl+S 전체기록(권장) / clipboard=화면분량
     cx = (left + right) // 2 - 15
     cy = (top + bottom) // 2
+    # 행 안에서 클릭할 세로 위치(0=행 맨 위, 0.5=가운데, 1.0=행 맨 아래 경계).
+    # 이사님 요청(2026-09-29): 클릭을 몇 포인트 아래로. 코드를 고치지 않고 config 로
+    # 조절하도록 뺀다. row_h=62px 기준 0.6=+6.2px, 0.65=+9.3px(가운데 대비). 1.0에
+    # 가까울수록 다음 행 경계를 눌러 옆 방이 열릴 위험이 커지므로 0.5~0.7 권장.
+    click_y_ratio = min(max(float(cfg.get("click_y_ratio", 0.5)), 0.0), 0.9)
     visible = max(1, int((bottom - top - top_pad) // row_h))
     # 한 번에 내리는 휠 눈금. 눈금당 몇 줄 내려가는지는 카카오톡이 정하므로 측정할 수 없다.
     # 적게 내려 페이지가 겹치게 하고(방 누락 방지) 반복으로 커버한다.
     adv = max(1, int(cfg.get("scroll_notches", 1)))
+    # 적응형 전진: 어떤 PC는 눈금 1개가 실제로 화면을 거의 못 움직여 매 페이지 같은 방만
+    # 반복해서 열게 된다(2026-09-29 실측: "살짝 내리고는 맨 위 방을 또 읽음" — 아래쪽
+    # 방까지 못 감). 새 방이 0개인 페이지가 나오면 다음 전진량을 2배로 늘리고, 새 방이
+    # 나오면 기본값(adv)으로 되돌려 평소엔 과도하게 건너뛰지 않는다.
+    adv_max = max(adv, int(cfg.get("scroll_notches_max", 8)))
     # max_scrolls 는 무한루프 안전망일 뿐, 종료는 stagnant 가 판단한다. 예전 기본값(30)이
     # 남은 설정 파일에서 목록 중간에 끊기지 않도록 하한을 둔다.
     max_scrolls = max(int(cfg.get("max_scrolls", 30)), 300)
@@ -815,11 +838,12 @@ def run_cycle_pixel(cfg, conn, iso, today):
         scroll_list_home(cx, cy, cfg)
         print(f"  [패스 {pas + 1}/{passes}] 목록 맨 위로 올리고 시작")
         stagnant = 0
+        adv_cur = adv          # 이번 패스의 적응형 전진량(정체 시에만 늘어남)
         for sc in range(max_scrolls):
             new_this = 0          # 이번 페이지에서 처음 본 방
             opened_this = 0       # 이번 페이지에서 창이 실제로 열린 횟수(끝 판정의 진짜 기준)
             for row in range(visible):
-                y = top + top_pad + int(row_h * row + row_h * 0.5)
+                y = top + top_pad + int(row_h * row + row_h * click_y_ratio)
                 if y >= bottom - 2:
                     break
                 try:
@@ -872,16 +896,18 @@ def run_cycle_pixel(cfg, conn, iso, today):
 
             pos_before = list_scroll_pos(chat)
             try:
-                pixel_wheel_down(cx, cy, adv)
+                pixel_wheel_down(cx, cy, adv_cur)
             except Exception:
                 pass
             time.sleep(dwell)
             pos_after = list_scroll_pos(chat)
             moved = (pos_before is not None and pos_after is not None and pos_after != pos_before)
             print(f"  · 페이지{sc + 1}: 열림 {opened_this}/{visible} · 새 방 {new_this} · 누적 {len(seen)}"
+                  + (f" · 전진 {adv_cur}눈금" if adv_cur != adv else "")
                   + (f" · 스크롤 {pos_before}->{pos_after}" if pos_before is not None else " · 스크롤 못 읽음"))
 
             stagnant = stagnant_next(stagnant, opened_this, new_this, pos_before, moved)
+            adv_cur = next_scroll_advance(adv, adv_cur, new_this, adv_max)
             # 스크롤 위치를 못 읽는 환경에서는 중복 구간을 더 오래 참는다(조기 종료 방지).
             limit = stagnant_limit if pos_before is not None else max(stagnant_limit, 12)
             if stagnant >= limit:
