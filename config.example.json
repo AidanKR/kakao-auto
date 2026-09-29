@@ -37,6 +37,9 @@
   "list_top_pad": 6,
   "_list_top_pad": "cycle: 목록 맨 위 여백(px). 첫 방을 놓치면 조절.",
 
+  "list_bottom_pad": 0,
+  "_list_bottom_pad": "cycle: 목록 맨 아래 제외 여백(px). 카톡 광고 배너가 마지막 1~2행을 덮으면(2026-09-29 실측 사례) 그 높이만큼 넣어서 클릭 대상에서 뺀다. 기본 0=기존과 동일.",
+
   "max_scrolls": 30,
   "_max_scrolls": "cycle: 한 바퀴에 스크롤 최대 횟수(방 많으면 늘리기).",
 
