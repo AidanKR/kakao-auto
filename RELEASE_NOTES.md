@@ -23,7 +23,7 @@
 값을 바꾼 뒤 카카오톡 창을 **최대화하고 맨 앞**으로 두고 다시 실행하세요.
 
 ### 앞서 v1.2.8에서 고친 것
-방별 CSV를 내보낼 때 대소문자만 다른 두 방(예: `KMALL09 Logistics`/`KMALL09 LOGISTICS`)이 Windows에서 같은 폴더로 취급돼 서로 덮어쓰던 버그를 고쳤습니다.
+방별 CSV를 내보낼 때 대소문자만 다른 두 방(예: `Team Room`/`TEAM ROOM`)이 Windows에서 같은 폴더로 취급돼 서로 덮어쓰던 버그를 고쳤습니다.
 
 ### 라이선스
 **Apache License 2.0** ([LICENSE](LICENSE) · [NOTICE](NOTICE)).

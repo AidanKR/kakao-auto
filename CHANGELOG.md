@@ -15,12 +15,12 @@ Downloads: [Releases](https://github.com/AidanKR/kakao-auto/releases) · one-cli
 
 ## v1.2.8 — 방별 CSV 이름이 대소문자만 다른 두 방을 뭉개던 버그 수정
 
-레노버 VPS로 전환하며 두 PC의 kakao.db를 병합하던 중 실제로 겪은 버그입니다: **대소문자만 다른 두 방(`KMALL09 Logistics` 656건 / `KMALL09 LOGISTICS` 224건, 그리고 `AMUTY_Annie` / `Amuty_Annie`)**이 `export_rooms_csv.py`에서 문제였습니다.
+레노버 VPS로 전환하며 두 PC의 kakao.db를 병합하던 중 실제로 겪은 버그입니다: **대소문자만 다른 두 방(예: `Team Room` 656건 / `TEAM ROOM` 224건)**이 `export_rooms_csv.py`에서 문제였습니다.
 
 `_unique()`가 폴더명을 Python 문자열로만 비교해 이 둘을 서로 다른 이름으로 판정했지만, **Windows(NTFS)는 폴더·파일명 대소문자를 구분하지 않습니다** — 실제로는 같은 폴더를 가리켜서, 방별 CSV를 쓸 때 나중에 처리되는 방이 먼저 것을 덮어썼습니다. 대화 내용(`kakao.db`)에는 영향이 없고 **방별 CSV 내보내기 단계에서만** 224건이 사라지는 문제였습니다.
 
 - `_unique()`의 중복 판정 기준을 대소문자 무시(`casefold()`)로 바꿔, 이런 방은 자동으로 `_2` 접미사가 붙어 각자 CSV를 가집니다.
-- 실제 충돌 사례 두 건으로 검증(`KMALL09 Logistics`/`KMALL09 LOGISTICS`, `AMUTY_Annie`/`Amuty_Annie`) — 이제 서로 다른 파일명으로 분리됩니다.
+- 실제 충돌 사례로 검증(대소문자만 다른 방 이름 쌍 — 예: `Team Room`/`TEAM ROOM`) — 이제 서로 다른 파일명으로 분리됩니다.
 
 ## v1.2.7 — 사진 백업 자동화 실험 종료(대화 텍스트만 계속)
 
