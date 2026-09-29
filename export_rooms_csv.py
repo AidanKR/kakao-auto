@@ -44,12 +44,18 @@ def safe_name(room):
 
 
 def _unique(name, used):
-    """서로 다른 방이 같은 파일명으로 뭉개지지 않게 _2, _3 붙임."""
+    """서로 다른 방이 같은 파일명으로 뭉개지지 않게 _2, _3 붙임.
+
+    2026-09-29 실측(DB 병합 작업 중 발견): 대소문자만 다른 두 방(예:
+    'KMALL09 Logistics'/'KMALL09 LOGISTICS')이 이 함수를 그냥 통과했다 — Python
+    문자열로는 서로 다르기 때문이다. 하지만 Windows(NTFS)는 폴더·파일명 대소문자를
+    구분하지 않아 실제 디스크에서는 같은 폴더를 가리켰고, 나중에 처리되는 방이 먼저
+    것의 CSV를 덮어써 224건이 통째로 빠졌다. 판정 기준을 대소문자 무시로 바꾼다."""
     base, i, out = name, 2, name
-    while out in used:
+    while out.casefold() in used:      # Windows 는 대소문자 구분 안 함
         out = f"{base}_{i}"
         i += 1
-    used.add(out)
+    used.add(out.casefold())
     return out
 
 
