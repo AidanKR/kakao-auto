@@ -119,6 +119,8 @@ C:\kakao_share\
 | Cycling gets confused | Don't touch the mouse or keyboard while the batch runs — it is driving the GUI. |
 | Only emoticons got backed up | Check `skip_emoticons: true` (the default), and raise `media_min_bytes` to drop small images. |
 | Photo backup finds nothing | KakaoTalk stores received images **encrypted** (`.cng`) in its cache — copying them is pointless, they won't open. Only files you explicitly saved from KakaoTalk (default: `Documents\카카오톡 받은 파일`) can be backed up. Set `nightly_media: false` if you don't need this step. |
+| It keeps reopening rooms it already saw and new rooms trickle in one at a time (e.g. the log shows "opened 12/12, new 1" over and over) | Fixed in **v1.2.9**. One scroll notch moves a different amount on every PC — on some it's less than one row, so most of each page overlaps the last. The sweep now ramps the scroll amount up when a page yields nothing new, and back down once new rooms show up again. If it's still slow, try `"click_y_ratio": 0.6` in `config.json`. |
+| The last room or two in the list never opens correctly | KakaoTalk can show an ad banner across the bottom of the chat list, covering the last row(s). Set `"list_bottom_pad"` in `config.json` to the banner's height in pixels to exclude that area from clicks. |
 
 ## Configuration
 
@@ -134,6 +136,16 @@ The ones worth knowing:
   "nightly_media": true,           // include photo backup
   "close_kakao_after": false,      // close KakaoTalk when the batch finishes
   "backup_passphrase": ""          // set it to AES-encrypt database backups
+}
+```
+
+If the sweep is slow — repeatedly opening rooms it already saw and barely finding new ones (added in v1.2.9):
+
+```jsonc
+{
+  "click_y_ratio": 0.5,        // where in a row to click (0=top, 0.5=middle, 1.0=bottom edge); try 0.6-0.65
+  "scroll_notches_max": 8,     // how far the adaptive scroll is allowed to ramp up when pages stop yielding new rooms
+  "list_bottom_pad": 0         // px to exclude from the bottom of the list if a KakaoTalk ad banner covers the last row(s)
 }
 ```
 
