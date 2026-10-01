@@ -321,6 +321,12 @@ def setup_autostart():
     if not ok:
         print(f"  [예약 실패] {(r.stderr or r.stdout).strip()}")
 
+    # schtasks /create 로 만든 작업은 '배터리일 때 시작 안 함·중지'가 기본으로 켜진다.
+    # 충전기가 빠진 노트북은 02시에 못 돌 수 있어, 두 항목만 끈다(시각·계정·실행 파일은 그대로).
+    batt_ok = None
+    if ok:
+        batt_ok = _allow_on_battery(subprocess)
+
     # 02시에 PC가 깨어 있도록 절전 끄기(권한 없으면 조용히 무시 — 안내로 보완)
     for a in (["powercfg", "/change", "standby-timeout-ac", "0"],
               ["powercfg", "/change", "hibernate-timeout-ac", "0"]):
@@ -328,6 +334,11 @@ def setup_autostart():
 
     print("\n  ── 무인 자동(야간 배치) ──")
     print(f"   - 매일 {st} 에: 전체 수집 → 정리 → 자동 종료  ({'등록됨' if ok else '실패(위 메시지)'})")
+    if batt_ok is True:
+        print("   - 배터리로 쓰는 중에도 실행: 설정됨")
+    elif batt_ok is False:
+        print("   - 배터리로 쓰는 중에도 실행: 설정 실패 — 충전기를 꽂아 두거나, 작업 스케줄러에서")
+        print("     'KakaoAuto Nightly' > 조건 탭의 '컴퓨터의 AC 전원이 켜져 있는 경우에만 작업 시작'을 끄세요.")
     print("   * 시간은 이 PC의 로컬 시간 기준입니다(한국이면 한국시간 02:00).")
     print("     바꾸려면 config.json 의 \"nightly_time\": \"02:00\" 수정 후 이 메뉴를 다시 실행.")
     print("   * 02시에 PC가 켜져 있고(절전/최대절전 꺼짐), 로그인·잠금해제 상태여야 합니다.")
@@ -335,6 +346,20 @@ def setup_autostart():
     print("   * 배치가 도는 몇 분간은 이 PC의 마우스/키보드를 쓰지 마세요(GUI 조작 중).")
     print("   지금 한 번 테스트: 메뉴에서 그냥 1)수집 → 2)정리 를 돌려 보거나,")
     print("   명령창에서  KakaoAuto.exe nightly  를 직접 실행해도 됩니다.")
+
+
+def _allow_on_battery(subprocess):
+    """야간 작업의 '배터리일 때 시작 안 함 / 배터리로 전환되면 중지'를 끈다. 성공 여부 반환."""
+    ps = (f"$s=(Get-ScheduledTask -TaskName '{NIGHTLY_TASK}').Settings;"
+          "$s.DisallowStartIfOnBatteries=$false;"
+          "$s.StopIfGoingOnBatteries=$false;"
+          f"Set-ScheduledTask -TaskName '{NIGHTLY_TASK}' -Settings $s | Out-Null")
+    try:
+        r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
+                           capture_output=True, text=True, timeout=60)
+        return r.returncode == 0
+    except Exception:
+        return False
 
 
 def _clean_legacy(subprocess):
