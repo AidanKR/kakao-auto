@@ -101,6 +101,11 @@ def make_backup(cfg=None):
     return out
 
 
-if __name__ == "__main__":
+def main():
+    """kakao.py 메뉴 9)가 모듈.main() 을 부른다 — 이 함수가 없어서 메뉴 9)가 항상 오류였다."""
     argparse.ArgumentParser(description="kakao.db 백업").parse_args()
     make_backup()
+
+
+if __name__ == "__main__":
+    main()

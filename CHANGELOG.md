@@ -3,6 +3,15 @@
 All notable changes to **kakao-auto** are documented here.
 Downloads: [Releases](https://github.com/AidanKR/kakao-auto/releases) · one-click Windows installer (`KakaoAuto-Setup.exe`).
 
+## v1.2.12 — 메뉴 9) DB 백업이 항상 오류로 끝나던 문제 수정
+
+**증상**: 메뉴 9)를 누르면 `module 'backup' has no attribute 'main'` 오류가 나고 백업이 만들어지지 않았습니다.
+
+**원인**: 메뉴는 각 기능 파일의 `main()` 함수를 부르는데, `backup.py`에는 그 함수가 없고 직접 실행하는 경우의 코드만 있었습니다. 단일 exe로 묶은 뒤 메뉴 9)는 한 번도 동작하지 않았습니다.
+
+- `backup.py`에 `main()`을 추가했습니다. 백업 방식(gzip, 선택적 암호화, 회전 보관)은 그대로입니다.
+- 야간 배치(02:00)는 원래 DB 백업을 하지 않습니다. 이 버전에서도 바꾸지 않았습니다.
+
 ## v1.2.11 — 노트북에서 충전기를 뺀 채로도 새벽 배치가 돌도록 등록 설정 보강
 
 **증상**: 배터리로만 쓰는 노트북은 새벽 02:00 예약이 시작되지 않거나 도중에 멈출 수 있었습니다.
